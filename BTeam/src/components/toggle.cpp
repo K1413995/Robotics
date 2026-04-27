@@ -2,7 +2,7 @@
 
 //lift brake mode is HOLD, in main.cpp intialize()
 
-void Components::toggle(bool on) {
-    if (on) {Hardware::toggle.move(-80);}
-    else {Hardware::toggle.brake();}
+int queue = 0; //add rapid fire system
+void Components::toggle(bool once) {
+    if (once) {Hardware::toggle.move_relative(-360, 200);}
 }

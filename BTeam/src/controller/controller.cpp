@@ -20,7 +20,7 @@ namespace Controller {
     bool openClawRelease = false;
     bool flipClaw = false;
 
-    bool toggleOn = false;
+    bool toggleOnce = false;
 
     // Updates controller values
     void update(const Controls& driver) {
@@ -38,7 +38,7 @@ namespace Controller {
             Hardware::controller.get_digital_new_press(driver.flipClaw)
         ) {flipClaw = !flipClaw;}
 
-        toggleOn = Hardware::controller.get_digital(driver.toggle);
+        toggleOnce = Hardware::controller.get_digital_new_press(driver.toggle);
     }
 
     // Looped logic
@@ -48,15 +48,16 @@ namespace Controller {
         //lift
         if (liftUp) {Components::lift(95);}
         else if (liftDown) {Components::lift(-95);}
+        // else if (openClawRelease){
+        //     chassis.arcade(0, 0);
+        //     Hardware::liftMotors.move_relative(120, 200);
+        //     pros::delay(100 );
+        // }
         else {Components::lift(0);}
         //claw
         Components::openClaw(!openClaw); //flip input
-        if(openClawRelease) {
-            Hardware::liftMotors.move_relative(120, 200);
-            //maybe add delayy to prevent john prefire move
-        }
         Components::clawUp(flipClaw);
         //toggle
-        Components::toggle(toggleOn);
+        Components::toggle(toggleOnce);
     }
 }
