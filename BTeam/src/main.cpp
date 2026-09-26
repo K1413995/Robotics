@@ -4,15 +4,16 @@
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 // Motor Groups (change port)
-pros::MotorGroup leftMotors({6, -8, -16}, pros::v5::MotorGearset::blue);
-pros::MotorGroup rightMotors({-3, 4, 12}, pros::v5::MotorGearset::blue); 
+pros::MotorGroup left_motors({6, -8, -16}, pros::v5::MotorGearset::blue);
+pros::MotorGroup right_motors({-3, 4, 12}, pros::v5::MotorGearset::blue); 
 
 lemlib::Drivetrain drivetrain(
-    &leftMotors,
-    &rightMotors,
+    &left_motors,
+    &right_motors,
     11,
     lemlib::Omniwheel::NEW_275,
-    600
+    600,
+    2
 );
 
 // lateral PID controller (NEED TO UNDERSTAND)
@@ -58,15 +59,15 @@ lemlib::ExpoDriveCurve steer_curve(
 //Sensors
 pros::IMU imu(10);
 
-lemlib::OdomSensors sensors();
+lemlib::OdomSensors sensors(nullptr, nullptr, nullptr, nullptr, &imu);
 
 lemlib::Chassis chassis(
     drivetrain,
     lateral_controller,
     angular_controller,
     sensors,
-    throttle_curve,
-    steer_curve
+    &throttle_curve,
+    &steer_curve
 );
 
 void on_center_button() {
@@ -96,8 +97,6 @@ void competition_initialize() {}
 void autonomous() {
     chassis.setPose(0, 0, 0);
 }
-
-pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 void opcontrol() {
     // loop forever
