@@ -4,15 +4,15 @@
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 // Motor Groups (change port)
-pros::MotorGroup left_motors({6, -8, -16}, pros::v5::MotorGearset::blue);
-pros::MotorGroup right_motors({-3, 4, 12}, pros::v5::MotorGearset::blue); 
+pros::MotorGroup left_motors({-2}, pros::v5::MotorGearset::blue);
+pros::MotorGroup right_motors({11}, pros::v5::MotorGearset::blue); 
 
 lemlib::Drivetrain drivetrain(
     &left_motors,
     &right_motors,
-    11,
-    lemlib::Omniwheel::NEW_275,
-    600,
+    11.5,
+    lemlib::Omniwheel::NEW_325,
+    450,
     2
 );
 
