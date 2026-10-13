@@ -1,20 +1,6 @@
 #include "main.h"
 #include "lemlib/api.hpp"
-
-pros::Controller controller(pros::E_CONTROLLER_MASTER);
-
-// Motor Groups (change port)
-pros::MotorGroup left_motors({-2}, pros::v5::MotorGearset::blue);
-pros::MotorGroup right_motors({11}, pros::v5::MotorGearset::blue); 
-
-lemlib::Drivetrain drivetrain(
-    &left_motors,
-    &right_motors,
-    11.5,
-    lemlib::Omniwheel::NEW_325,
-    450,
-    2
-);
+#include "pros/abstract_motor.hpp"
 
 // lateral PID controller (NEED TO UNDERSTAND)
 lemlib::ControllerSettings lateral_controller(
@@ -56,11 +42,33 @@ lemlib::ExpoDriveCurve steer_curve(
     1.019 // expo curve gain
 );
 
+// Controller
+pros::Controller controller(pros::E_CONTROLLER_MASTER);
+
 //Sensors
 pros::IMU imu(10);
+//tracking wheel x
+//tracking wheel y
 
 lemlib::OdomSensors sensors(nullptr, nullptr, nullptr, nullptr, &imu);
 
+// Motor Groups
+pros::MotorGroup left_motors({-2, -3}, pros::v5::MotorGearset::blue);
+pros::MotorGroup right_motors({11, 12}, pros::v5::MotorGearset::blue);
+
+pros::MotorGroup lift({13, -20}, pros::v5::MotorGearset::green, pros::MotorEncoderUnits::deg);
+
+// Drivetrain
+lemlib::Drivetrain drivetrain(
+    &left_motors,
+    &right_motors,
+    11.5,
+    lemlib::Omniwheel::NEW_325,
+    450,
+    2
+);
+
+// Chassis (commbines all above)
 lemlib::Chassis chassis(
     drivetrain,
     lateral_controller,
@@ -70,6 +78,7 @@ lemlib::Chassis chassis(
     &steer_curve
 );
 
+//
 void on_center_button() {
 	//
 }
@@ -77,6 +86,7 @@ void on_center_button() {
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
+    lift.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD); // allow lift to be stationary
     // print position to brain screen
     pros::Task screen_task([&]() {
         while (true) {
@@ -84,6 +94,8 @@ void initialize() {
             pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
             pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
             pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
+            pros::lcd::print(3, "Degree: %d", lift.get_position());
+            
             // delay to save resources
             pros::delay(20);
         }
@@ -101,14 +113,29 @@ void autonomous() {
 void opcontrol() {
     // loop forever
     while (true) {
-        // get left y and right x positions
+
+        // Macro
+
+        // get left y and right x
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
-        // move the robot
+        // get up or down active
+        bool liftUp = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+        bool liftDown = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
+
+        // move robot
         chassis.arcade(leftY, rightX);
+
+        // move lift
+        if (liftUp && (lift.get_position() < 680)) {
+            lift.move(127);
+        } else if (liftDown && (lift.get_position() > 0)) {
+            lift.move(-50);
+        } else {lift.brake();}
 
         // delay to save resources
         pros::delay(20);
     }
+
 }
