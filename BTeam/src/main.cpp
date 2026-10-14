@@ -58,6 +58,9 @@ pros::MotorGroup right_motors({11, 12}, pros::v5::MotorGearset::blue);
 
 pros::MotorGroup lift({13, -20}, pros::v5::MotorGearset::green, pros::MotorEncoderUnits::deg);
 
+pros::adi::DigitalOut openGate('A', false);
+pros::adi::DigitalOut flipGate('B', false);
+
 // Drivetrain
 lemlib::Drivetrain drivetrain(
     &left_motors,
@@ -124,6 +127,9 @@ void opcontrol() {
         bool liftUp = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
         bool liftDown = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
 
+        bool openClaw = controller.get_digital(pros::E_CONTROLLER_DIGITAL_X);
+        bool rotateClaw = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X);
+
         // move robot
         chassis.arcade(leftY, rightX);
 
@@ -133,6 +139,10 @@ void opcontrol() {
         } else if (liftDown && (lift.get_position() > 0)) {
             lift.move(-50);
         } else {lift.brake();}
+
+        // claw stuf
+        openGate.set_value(openClaw);
+        flipGate.set_value(rotateClaw);
 
         // delay to save resources
         pros::delay(20);
