@@ -86,12 +86,15 @@ void on_center_button() {
 	//
 }
 
+bool stopLift = false;
+
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
     lift.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD); // allow lift to be stationary
+
     // print position to brain screen
-    pros::Task screen_task([&]() {
+    pros::Task screen([&]() {
         while (true) {
             // print robot location to the brain screen
             pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
@@ -103,6 +106,27 @@ void initialize() {
             pros::delay(20);
         }
     });
+
+    pros::Task macro([](){
+        while (true) {
+
+            pros::delay(20);
+        }
+    });
+
+    pros::Task liftEfficieny([](pros::Motor motor){
+        int time = 0;
+        bool timeout = true;
+        while (true) {
+            if (time == 500) {}
+            if (lift.get_efficiency_all()[0] < 10 && timeout == false) {
+                
+            }
+            pros::delay(20);
+            if ()time+=20;
+        }
+    });
+
 }
 
 void disabled() {}
@@ -127,17 +151,20 @@ void opcontrol() {
         bool liftUp = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
         bool liftDown = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
 
-        bool openClaw = controller.get_digital(pros::E_CONTROLLER_DIGITAL_X);
-        bool rotateClaw = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X);
+        bool openClaw = !controller.get_digital(pros::E_CONTROLLER_DIGITAL_X);
+        bool rotateClaw = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A);
 
         // move robot
         chassis.arcade(leftY, rightX);
 
         // move lift
-        if (liftUp && (lift.get_position() < 680)) {
-            lift.move(127);
-        } else if (liftDown && (lift.get_position() > 0)) {
-            lift.move(-50);
+        if (!stopLift) {
+            if (liftUp) { // && (lift.get_position() < 680)
+                lift.move(127);
+            } else 
+            if (liftDown) { // && (lift.get_position() > 0)
+                lift.move(-50);
+            }
         } else {lift.brake();}
 
         // claw stuf
