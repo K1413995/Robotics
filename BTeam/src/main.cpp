@@ -86,6 +86,19 @@ void on_center_button() {
 	//
 }
 
+// Controls
+// get left y and right x
+int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+
+// get up or down active
+bool liftUp = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+bool liftDown = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
+
+bool openClaw = !controller.get_digital(pros::E_CONTROLLER_DIGITAL_X);
+bool rotateClaw = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A);
+
+// Globals
 bool stopLift = false;
 
 void initialize() {
@@ -116,14 +129,22 @@ void initialize() {
 
     pros::Task liftEfficieny([](pros::Motor motor){
         int time = 0;
-        bool timeout = true;
         while (true) {
-            if (time == 500) {}
-            if (lift.get_efficiency_all()[0] < 10 && timeout == false) {
-                
+            if (time >= 500) {
+                //just go
+                if (//check efficenity) {
+                    //
+                }
+            } else {
+                //wait for time and hen efficienty
+                if (liftUp && lift.get_efficiency_all()[0] < 10) {
+                    //
+                }
             }
+                
+            if (controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_L1) || controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_L1)) {time = 0;}
+            else {time += 20;}
             pros::delay(20);
-            if ()time+=20;
         }
     });
 
@@ -142,17 +163,6 @@ void opcontrol() {
     while (true) {
 
         // Macro
-
-        // get left y and right x
-        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-
-        // get up or down active
-        bool liftUp = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
-        bool liftDown = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
-
-        bool openClaw = !controller.get_digital(pros::E_CONTROLLER_DIGITAL_X);
-        bool rotateClaw = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A);
 
         // move robot
         chassis.arcade(leftY, rightX);
