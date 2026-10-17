@@ -1,6 +1,7 @@
 #include "main.h"
 #include "lemlib/api.hpp"
 #include "pros/abstract_motor.hpp"
+#include <cmath>
 
 // lateral PID controller (NEED TO UNDERSTAND)
 lemlib::ControllerSettings lateral_controller(
@@ -86,18 +87,6 @@ void on_center_button() {
 	//
 }
 
-// Controls
-// get left y and right x
-int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-
-// get up or down active
-bool liftUp = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
-bool liftDown = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
-
-bool openClaw = !controller.get_digital(pros::E_CONTROLLER_DIGITAL_X);
-bool rotateClaw = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A);
-
 // Globals
 bool stopLift = false;
 
@@ -121,33 +110,51 @@ void initialize() {
     });
 
     pros::Task macro([](){
+        int targetHeading = 0;
         while (true) {
-
+            bool newRight = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2);
+            bool newLeft = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1);
+            float heading = chassis.getPose().theta;
+            if (newRight || newLeft) {
+                if (chassis.isInMotion()) {
+                    if (newRight) {targetHeading += 90;}
+                    if (newLeft) {targetHeading -= 90;}
+                } else {
+                    if (newRight) {
+                        targetHeading = (int)(std::floor(heading / 90) + 1) * 90;
+                    }
+                    if (newLeft) {
+                        targetHeading = (int)(std::ceil(heading / 90) - 1) * 90;
+                    }
+                }
+                targetHeading = ((targetHeading % 360) + 360) % 360; // Normalize
+            chassis.cancelMotion();
+            chassis.turnToHeading(targetHeading, 2000);
+            }
             pros::delay(20);
         }
     });
 
-    pros::Task liftEfficieny([](pros::Motor motor){
+    pros::Task liftEfficieny([](){
         int time = 0;
         while (true) {
-            if (time >= 500) {
-                //just go
-                if (//check efficenity) {
-                    //
+            bool liftActive = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1) || controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
+            bool liftRelease = controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_L1) || controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_L2);
+            bool efficient = lift.get_efficiency_all()[0] >= 10;
+            if (liftRelease) {
+                time = 0;
+                stopLift = false;
+            } else if (liftActive && !stopLift) {
+                time += 20;
+                if (time >= 500 && !efficient) {
+                    stopLift = true;
                 }
-            } else {
-                //wait for time and hen efficienty
-                if (liftUp && lift.get_efficiency_all()[0] < 10) {
-                    //
-                }
+            } else if (!liftActive) {
+                time = 0;
             }
-                
-            if (controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_L1) || controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_L1)) {time = 0;}
-            else {time += 20;}
             pros::delay(20);
         }
     });
-
 }
 
 void disabled() {}
@@ -161,21 +168,33 @@ void autonomous() {
 void opcontrol() {
     // loop forever
     while (true) {
+        // Controls
+        // get left y and right x
+        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
-        // Macro
+        // get up or down active
+        bool liftUp = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+        bool liftDown = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
 
-        // move robot
-        chassis.arcade(leftY, rightX);
+        bool openClaw = !controller.get_digital(pros::E_CONTROLLER_DIGITAL_X);
+        bool rotateClaw = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A);
+
+        // move robot and cancel
+        if (abs(leftY) > 0 || abs(rightX) > 0) {
+            chassis.cancelAllMotions();
+            chassis.arcade(leftY, rightX);
+        }
 
         // move lift
         if (!stopLift) {
             if (liftUp) { // && (lift.get_position() < 680)
-                lift.move(127);
+                lift.move(50);
             } else 
             if (liftDown) { // && (lift.get_position() > 0)
                 lift.move(-50);
-            }
-        } else {lift.brake();}
+            } else {lift.brake();}
+        }
 
         // claw stuf
         openGate.set_value(openClaw);
