@@ -1,6 +1,7 @@
 #include "main.h"
 #include "lemlib/api.hpp"
 #include "pros/abstract_motor.hpp"
+#include "pros/misc.h"
 #include <cmath>
 
 // lateral PID controller (NEED TO UNDERSTAND)
@@ -61,6 +62,8 @@ pros::MotorGroup lift({13, -20}, pros::v5::MotorGearset::green, pros::MotorEncod
 
 pros::adi::DigitalOut openGate('A', false);
 pros::adi::DigitalOut flipGate('B', false);
+
+pros::Motor toggle(8, pros::v5::MotorGearset::green);
 
 // Drivetrain
 lemlib::Drivetrain drivetrain(
@@ -131,6 +134,7 @@ void initialize() {
             chassis.cancelMotion();
             chassis.turnToHeading(targetHeading, 2000);
             }
+            pros::lcd::print(5, "Heading: %.1f Target: %d Moving: %d", heading, targetHeading, chassis.isInMotion());
             pros::delay(20);
         }
     });
@@ -140,18 +144,20 @@ void initialize() {
         while (true) {
             bool liftActive = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1) || controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
             bool liftRelease = controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_L1) || controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_L2);
-            bool efficient = lift.get_efficiency_all()[0] >= 10;
+            bool efficient = lift.get_efficiency_all()[0] > 10;
             if (liftRelease) {
                 time = 0;
                 stopLift = false;
             } else if (liftActive && !stopLift) {
                 time += 20;
-                if (time >= 500 && !efficient) {
+                if (time >= 100 && !efficient) {
                     stopLift = true;
                 }
             } else if (!liftActive) {
                 time = 0;
             }
+            
+            pros::lcd::print(4, "Eff: %.1f%% Active: %d Stop: %d", lift.get_efficiency_all()[0], liftActive, stopLift);
             pros::delay(20);
         }
     });
@@ -165,6 +171,9 @@ void autonomous() {
     chassis.setPose(0, 0, 0);
 }
 
+// test
+bool rotateClaw = true;
+
 void opcontrol() {
     // loop forever
     while (true) {
@@ -177,28 +186,45 @@ void opcontrol() {
         bool liftUp = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
         bool liftDown = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
 
+        // claw
         bool openClaw = !controller.get_digital(pros::E_CONTROLLER_DIGITAL_X);
-        bool rotateClaw = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A);
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {rotateClaw = !rotateClaw;}
+
+        // toggle
+        bool toggleActivate = controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y);
 
         // move robot and cancel
-        if (abs(leftY) > 0 || abs(rightX) > 0) {
-            chassis.cancelAllMotions();
-            chassis.arcade(leftY, rightX);
-        }
+        // if (abs(leftY) > 0 || abs(rightX) > 0) {
+        //     chassis.cancelAllMotions();
+        //     chassis.arcade(leftY, rightX);
+        // }
+        chassis.arcade(leftY, rightX);
 
         // move lift
-        if (!stopLift) {
-            if (liftUp) { // && (lift.get_position() < 680)
-                lift.move(50);
-            } else 
-            if (liftDown) { // && (lift.get_position() > 0)
-                lift.move(-50);
-            } else {lift.brake();}
+        // if (!stopLift) {
+        //     if (liftUp) { // && (lift.get_position() < 680)
+        //         lift.move(50);
+        //     } else 
+        //     if (liftDown) { // && (lift.get_position() > 0)
+        //         lift.move(-50);
+        //     } else {lift.brake();}
+        // }
+        if (liftUp) {
+            lift.move(50);
+        } else if (liftDown) {
+            lift.move(-50);
+        } else {
+            lift.brake();
         }
 
         // claw stuf
         openGate.set_value(openClaw);
         flipGate.set_value(rotateClaw);
+
+        //toggle
+        if (toggleActivate) {
+            toggle.move(127);
+        } else {toggle.brake();}
 
         // delay to save resources
         pros::delay(20);
