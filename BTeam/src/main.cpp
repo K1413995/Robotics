@@ -169,6 +169,7 @@ void competition_initialize() {}
 
 void autonomous() {
     chassis.setPose(0, 0, 0);
+    //chassis.arcade(0, 50);
 }
 
 // test
@@ -176,6 +177,7 @@ bool rotateClaw = true;
 
 void opcontrol() {
     // loop forever
+    double shift = 1;
     while (true) {
         // Controls
         // get left y and right x
@@ -193,12 +195,19 @@ void opcontrol() {
         // toggle
         bool toggleActivate = controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y);
 
+        // Shifter
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP) && shift < 1) {
+            shift += .1;
+        } else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN) && shift > 0.2) {
+            shift -= .1;
+        }
+
         // move robot and cancel
         // if (abs(leftY) > 0 || abs(rightX) > 0) {
         //     chassis.cancelAllMotions();
         //     chassis.arcade(leftY, rightX);
         // }
-        chassis.arcade(leftY, rightX);
+        chassis.arcade((leftY * shift), (rightX * shift));
 
         // move lift
         // if (!stopLift) {
@@ -210,9 +219,9 @@ void opcontrol() {
         //     } else {lift.brake();}
         // }
         if (liftUp) {
-            lift.move(50);
+            lift.move(60);
         } else if (liftDown) {
-            lift.move(-50);
+            lift.move(-60);
         } else {
             lift.brake();
         }
