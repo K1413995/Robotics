@@ -9,10 +9,10 @@ namespace Ports {
     constexpr int VERTICAL = 17;
     constexpr int HORIZONTAL = 18;
 
-    constexpr int LEFT_FRONT = -2;
-    constexpr int LEFT_BACK = -3;
-    constexpr int RIGHT_FRONT = 11;
-    constexpr int RIGHT_BACK = 12;
+    constexpr int LEFT_FRONT = -15;
+    constexpr int LEFT_BACK = -14;
+    constexpr int RIGHT_FRONT = 6;
+    constexpr int RIGHT_BACK = 7;
 
     constexpr int LIFT_LEFT = 13;
     constexpr int LIFT_RIGHT = -20;
