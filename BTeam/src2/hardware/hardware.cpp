@@ -7,7 +7,7 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 // Motor Groups
 pros::MotorGroup liftMotors({Ports::LIFT_LEFT, Ports::LIFT_RIGHT}, pros::v5::MotorGearset::green, pros::MotorEncoderUnits::deg);
 
-pros::adi::DigitalOut openGate(Ports::OPEN_GATE, false);
+pros::adi::DigitalOut openClaw(Ports::OPEN_CLAW, false);
 
 pros::Motor toggle(Ports::TOGGLE, pros::v5::MotorGearset::green);
 

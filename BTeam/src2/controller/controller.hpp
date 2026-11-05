@@ -1,19 +1,20 @@
 #pragma once
 
-#include "../components/components.hpp"
 #include "controls.hpp"
 
 namespace Controller {
     void update(const Controls& driver);
-    void act();
+    void execute();
 
-    extern int leftY;
-    extern int rightX;
+    extern bool auton;
+
+    extern int drive;
+    extern int steer;
 
     extern bool liftUp;
     extern bool LiftDown;
 
     extern bool openClaw;
 
-    extern bool toggle;
+    extern bool toggleOn;
 }

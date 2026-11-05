@@ -23,8 +23,9 @@ void autonomous() {
 
 void opcontrol() {
     while (true) {
+        if (Controller::auton) {autonomous();}
         Controller::update(john);
-        Controller::act();
+        Controller::execute();
         pros::delay(20);
     }
 }

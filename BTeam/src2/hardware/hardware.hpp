@@ -20,7 +20,7 @@ namespace Ports {
 
     constexpr int TOGGLE = 8;
 
-    constexpr char OPEN_GATE = 'A';
+    constexpr char OPEN_CLAW = 'A';
 }
 
 namespace Hardware {
@@ -34,7 +34,7 @@ namespace Hardware {
 
     extern pros::Motor toggle;
 
-    extern pros::adi::DigitalOut openGate;
+    extern pros::adi::DigitalOut openClaw;
 
     // Sensors
     extern pros::IMU imu;

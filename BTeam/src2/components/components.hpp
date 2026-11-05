@@ -2,4 +2,8 @@
 
 #include "../hardware/hardware.hpp"
 
-void lift(int);
+namespace Components {
+    void lift(int);
+    void claw(bool);
+    void toggle(bool);
+}
