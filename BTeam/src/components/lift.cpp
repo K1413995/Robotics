@@ -2,7 +2,7 @@
 
 //lift brake mode is HOLD, in main.cpp intialize()
 
-void lift(int voltage) {
+void Components::lift(int voltage) {
     if (voltage == 0) {Hardware::liftMotors.brake();}
     else {Hardware::liftMotors.move(voltage);}
 }

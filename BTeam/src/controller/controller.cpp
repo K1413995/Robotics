@@ -27,7 +27,7 @@ namespace Controller {
         steer = Hardware::controller.get_analog(driver.rightX);
 
         liftUp = Hardware::controller.get_digital(driver.liftUp);
-        LiftDown = Hardware::controller.get_digital(driver.liftDown);
+        liftDown = Hardware::controller.get_digital(driver.liftDown);
 
         openClaw = Hardware::controller.get_digital(driver.openClaw);
 

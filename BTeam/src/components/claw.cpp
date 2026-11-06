@@ -1,5 +1,5 @@
 #include "components.hpp"
 
-void claw(bool open) {
+void Components::claw(bool open) {
     Hardware::openClaw.set_value(open);
 }

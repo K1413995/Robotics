@@ -12,7 +12,7 @@ namespace Controller {
     extern int steer;
 
     extern bool liftUp;
-    extern bool LiftDown;
+    extern bool liftDown;
 
     extern bool openClaw;
 

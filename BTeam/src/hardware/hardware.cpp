@@ -1,6 +1,8 @@
 // HARDWARE
 #include "hardware.hpp"
 
+namespace Hardware {
+
 // Controller
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
@@ -54,3 +56,4 @@ lemlib::ExpoDriveCurve steerCurve(
     10, // minimum output where drivetrain will move out of 127
     1.019 // expo curve gain
 );
+}
