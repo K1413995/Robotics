@@ -1,5 +1,6 @@
 // HARDWARE
 #include "hardware.hpp"
+#include "pros/abstract_motor.hpp"
 
 namespace Hardware {
 
@@ -9,8 +10,8 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 // Motor Groups
 pros::MotorGroup liftMotors({Ports::LIFT_LEFT, Ports::LIFT_RIGHT}, pros::v5::MotorGearset::green, pros::MotorEncoderUnits::deg);
 
-pros::adi::DigitalOut claw(Ports::OPEN_CLAW, false);
-pros::Motor flipClaw(Ports::FLIP_CLAW, pros::v5::MotorGearset::rpm_200);
+pros::adi::DigitalOut openClaw(Ports::OPEN_CLAW, true);
+pros::Motor flipClaw(Ports::FLIP_CLAW, pros::v5::MotorGearset::rpm_200, pros::v5::MotorEncoderUnits::degrees);
 
 pros::Motor toggle(Ports::TOGGLE, pros::v5::MotorGearset::rpm_200);
 

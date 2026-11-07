@@ -7,8 +7,14 @@ namespace Components {
 
     bool lastPositionUp = true;
     void clawUp(bool goUp) {
-        if(goUp && !lastPositionUp) {Hardware::flipClaw.move_relative(90, 100);}
-        else if(!goUp && lastPositionUp) {Hardware::flipClaw.move_relative(-90, 100);}
+        if(goUp && !lastPositionUp) {
+            openClaw(true);
+            Hardware::flipClaw.move_absolute(0, 200);
+        }
+        else if(!goUp && lastPositionUp) {
+            Hardware::flipClaw.move_absolute(280, 200);
+            openClaw(false);
+        }
         lastPositionUp = goUp;
     }
 }

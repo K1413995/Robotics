@@ -7,16 +7,17 @@
 #include "controller/controls.hpp"
 #include "components/components.hpp"
 
-void on_center_button() {
-    Components::clawUp(true);
-}
+void on_center_button() {}
 
 void initialize() {
     Hardware::liftMotors.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+    Hardware::liftMotors.brake();
 }
 
-void disabled() {}
+void disabled() {
+    Components::clawUp(true);
+}
 
 void competition_initialize() {}
 

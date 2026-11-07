@@ -15,6 +15,7 @@ namespace Controller {
     extern bool liftDown;
 
     extern bool openClaw;
+    extern bool flipClaw;
 
     extern bool toggleOn;
 }

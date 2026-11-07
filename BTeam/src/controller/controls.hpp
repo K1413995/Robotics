@@ -12,6 +12,7 @@ struct Controls {
     pros::controller_digital_e_t liftDown = pros::E_CONTROLLER_DIGITAL_L2;
 
     pros::controller_digital_e_t openClaw = pros::E_CONTROLLER_DIGITAL_X;
+    pros::controller_digital_e_t flipClaw = pros::E_CONTROLLER_DIGITAL_UP;
 
     pros::controller_digital_e_t toggle = pros::E_CONTROLLER_DIGITAL_Y;
 };

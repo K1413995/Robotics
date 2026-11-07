@@ -16,7 +16,10 @@ namespace Controller {
     bool liftUp = false;
     bool liftDown = false;
 
-    bool openClaw = false;
+    bool openClaw = true;
+    bool openClawRelease = false;
+    bool flipClaw = false;
+
     bool toggleOn = false;
 
     // Updates controller values
@@ -30,6 +33,10 @@ namespace Controller {
         liftDown = Hardware::controller.get_digital(driver.liftDown);
 
         openClaw = Hardware::controller.get_digital(driver.openClaw);
+        openClawRelease = Hardware::controller.get_digital_new_release(driver.openClaw);
+        if ( //toggles mode
+            Hardware::controller.get_digital_new_press(driver.flipClaw)
+        ) {flipClaw = !flipClaw;}
 
         toggleOn = Hardware::controller.get_digital(driver.toggle);
     }
@@ -39,11 +46,15 @@ namespace Controller {
         //drive
         chassis.arcade(drive, steer);
         //lift
-        if (liftUp) {Components::lift(127);}
-        else if (liftDown) {Components::lift(-127);}
+        if (liftUp) {Components::lift(95);}
+        else if (liftDown) {Components::lift(-95);}
         else {Components::lift(0);}
         //claw
-        Components::openClaw(openClaw);
+        Components::openClaw(!openClaw); //flip input
+        if(openClawRelease) {
+            Hardware::liftMotors.move_relative(120, 200);
+        }
+        Components::clawUp(flipClaw);
         //toggle
         Components::toggle(toggleOn);
     }
