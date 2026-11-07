@@ -24,7 +24,7 @@ namespace Controller {
 
     // Updates controller values
     void update(const Controls& driver) {
-        auton = Hardware::controller.get_digital_new_press(driver.auton);
+        //auton = Hardware::controller.get_digital_new_press(driver.auton);
 
         drive = Hardware::controller.get_analog(driver.leftY);
         steer = Hardware::controller.get_analog(driver.rightX);
@@ -53,6 +53,7 @@ namespace Controller {
         Components::openClaw(!openClaw); //flip input
         if(openClawRelease) {
             Hardware::liftMotors.move_relative(120, 200);
+            //maybe add delayy to prevent john prefire move
         }
         Components::clawUp(flipClaw);
         //toggle

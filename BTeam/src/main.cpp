@@ -12,18 +12,15 @@ void on_center_button() {}
 void initialize() {
     Hardware::liftMotors.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
-    Hardware::liftMotors.brake();
 }
 
-void disabled() {
-    Components::clawUp(true);
-}
+void disabled() {}
 
 void competition_initialize() {}
 
 void autonomous() {
-    chassis.setPose(0, 0, 0);
-    chassis.moveToPoint(20, 20, 5000);
+    //chassis.setPose(0, 0, 0);
+    //chassis.moveToPoint(20, 20, 5000);
 }
 
 void opcontrol() {
