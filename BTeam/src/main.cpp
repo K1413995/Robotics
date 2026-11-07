@@ -5,11 +5,15 @@
 #include "hardware/hardware.hpp"
 #include "controller/controller.hpp"
 #include "controller/controls.hpp"
+#include "components/components.hpp"
 
-void on_center_button() {}
+void on_center_button() {
+    Components::clawUp(true);
+}
 
 void initialize() {
     Hardware::liftMotors.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
+    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
 }
 
 void disabled() {}
@@ -22,6 +26,7 @@ void autonomous() {
 }
 
 void opcontrol() {
+    Components::clawUp(false);
     while (true) {
         if (Controller::auton) {autonomous();}
         Controller::update(john);

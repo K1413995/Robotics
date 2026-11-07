@@ -31,7 +31,7 @@ namespace Controller {
 
         openClaw = Hardware::controller.get_digital(driver.openClaw);
 
-        toggleOn = Hardware::controller.get_digital_new_press(driver.toggle);
+        toggleOn = Hardware::controller.get_digital(driver.toggle);
     }
 
     // Looped logic
@@ -43,7 +43,7 @@ namespace Controller {
         else if (liftDown) {Components::lift(-127);}
         else {Components::lift(0);}
         //claw
-        Components::claw(openClaw);
+        Components::openClaw(openClaw);
         //toggle
         Components::toggle(toggleOn);
     }

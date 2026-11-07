@@ -4,6 +4,9 @@
 
 namespace Components {
     void lift(int);
-    void claw(bool);
+
+    void openClaw(bool);
+    void clawUp(bool);
+
     void toggle(bool);
 }

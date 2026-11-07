@@ -12,15 +12,16 @@ namespace Ports {
 
     constexpr int LEFT_FRONT = -15;
     constexpr int LEFT_BACK = -14;
-    constexpr int RIGHT_FRONT = 6;
+    constexpr int RIGHT_FRONT = 5;
     constexpr int RIGHT_BACK = 7;
 
     constexpr int LIFT_LEFT = 13;
-    constexpr int LIFT_RIGHT = -20;
+    constexpr int LIFT_RIGHT = -11;
 
     constexpr int TOGGLE = 8;
 
     constexpr char OPEN_CLAW = 'A';
+    constexpr int FLIP_CLAW = 17;
 }
 
 namespace Hardware {
@@ -35,6 +36,7 @@ namespace Hardware {
     extern pros::Motor toggle;
 
     extern pros::adi::DigitalOut openClaw;
+    extern pros::Motor flipClaw;
 
     // Sensors
     extern pros::IMU imu;

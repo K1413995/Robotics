@@ -9,9 +9,10 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 // Motor Groups
 pros::MotorGroup liftMotors({Ports::LIFT_LEFT, Ports::LIFT_RIGHT}, pros::v5::MotorGearset::green, pros::MotorEncoderUnits::deg);
 
-pros::adi::DigitalOut openClaw(Ports::OPEN_CLAW, false);
+pros::adi::DigitalOut claw(Ports::OPEN_CLAW, false);
+pros::Motor flipClaw(Ports::FLIP_CLAW, pros::v5::MotorGearset::rpm_200);
 
-pros::Motor toggle(Ports::TOGGLE, pros::v5::MotorGearset::green);
+pros::Motor toggle(Ports::TOGGLE, pros::v5::MotorGearset::rpm_200);
 
 pros::MotorGroup leftMotors({Ports::LEFT_FRONT, Ports::LEFT_BACK}, pros::v5::MotorGearset::blue);
 pros::MotorGroup rightMotors({Ports::RIGHT_FRONT, Ports::RIGHT_BACK}, pros::v5::MotorGearset::blue);
