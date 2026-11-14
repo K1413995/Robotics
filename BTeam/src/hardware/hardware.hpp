@@ -8,7 +8,7 @@
 namespace Ports {
     constexpr int IMU = 2;
     constexpr int VERTICAL = 6;
-    constexpr int HORIZONTAL = 17;
+    constexpr int HORIZONTAL = 9;
 
     constexpr int LEFT_FRONT = -15;
     constexpr int LEFT_BACK = -14;
