@@ -25,7 +25,6 @@ void autonomous() {
 }
 
 void opcontrol() {
-    Components::clawUp(false);
     while (true) {
         if (Controller::auton) {autonomous();}
         Controller::update(john);

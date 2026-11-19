@@ -10,8 +10,7 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 // Motor Groups
 pros::MotorGroup liftMotors({Ports::LIFT_LEFT, Ports::LIFT_RIGHT}, pros::v5::MotorGearset::green, pros::MotorEncoderUnits::deg);
 
-pros::adi::DigitalOut openClaw(Ports::OPEN_CLAW, true);
-pros::Motor flipClaw(Ports::FLIP_CLAW, pros::v5::MotorGearset::rpm_200, pros::v5::MotorEncoderUnits::degrees);
+pros::Motor claw(Ports::CLAW, pros::v5::MotorGearset::rpm_200);
 
 pros::Motor toggle(Ports::TOGGLE, pros::v5::MotorGearset::rpm_200);
 
@@ -48,14 +47,14 @@ lemlib::OdomSensors sensors(
 // input curve for throttle input during driver control
 lemlib::ExpoDriveCurve throttleCurve(
     3, // joystick deadband out of 127
-    10, // minimum output where drivetrain will move out of 127
-    1.019 // expo curve gain
+    0,//10, // minimum output where drivetrain will move out of 127
+    1//1.019 // expo curve gain
 );
 
 // input curve for steer input during driver control
 lemlib::ExpoDriveCurve steerCurve(
     3, // joystick deadband out of 127
-    10, // minimum output where drivetrain will move out of 127
-    1.019 // expo curve gain
+    0,//10, // minimum output where drivetrain will move out of 127
+    1//1.019 // expo curve gain
 );
 }

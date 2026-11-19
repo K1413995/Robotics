@@ -16,9 +16,8 @@ namespace Controller {
     bool liftUp = false;
     bool liftDown = false;
 
-    bool openClaw = true;
-    bool openClawRelease = false;
-    bool flipClaw = false;
+    bool clawTap = false;
+    bool clawIntake = false;
 
     bool toggleOnce = false;
 
@@ -32,11 +31,8 @@ namespace Controller {
         liftUp = Hardware::controller.get_digital(driver.liftUp);
         liftDown = Hardware::controller.get_digital(driver.liftDown);
 
-        openClaw = Hardware::controller.get_digital(driver.openClaw);
-        openClawRelease = Hardware::controller.get_digital_new_release(driver.openClaw);
-        if ( //toggles mode
-            Hardware::controller.get_digital_new_press(driver.flipClaw)
-        ) {flipClaw = !flipClaw;}
+        clawIntake = Hardware::controller.get_digital(driver.claw);
+        clawTap = Hardware::controller.get_digital_new_press(driver.claw);
 
         toggleOnce = Hardware::controller.get_digital_new_press(driver.toggle);
     }
@@ -48,15 +44,10 @@ namespace Controller {
         //lift
         if (liftUp) {Components::lift(95);}
         else if (liftDown) {Components::lift(-95);}
-        // else if (openClawRelease){
-        //     chassis.arcade(0, 0);
-        //     Hardware::liftMotors.move_relative(120, 200);
-        //     pros::delay(100 );
-        // }
         else {Components::lift(0);}
         //claw
-        Components::openClaw(!openClaw); //flip input
-        Components::clawUp(flipClaw);
+        Components::clawIntake(clawIntake);
+        Components::clawOpen(clawTap); //flip input
         //toggle
         Components::toggle(toggleOnce);
     }

@@ -1,20 +1,15 @@
 #include "components.hpp"
 
 namespace Components {
-    void openClaw(bool open) {
-        Hardware::openClaw.set_value(open);
+    void clawIntake(bool in) {
+        if (in) {Hardware::claw.move(60);} 
+        else {Hardware::claw.brake();}
     }
 
-    bool lastPositionUp = true;
-    void clawUp(bool goUp) {
-        if(goUp && !lastPositionUp) {
-            openClaw(true);
-            Hardware::flipClaw.move_absolute(0, 200);
+    void clawOpen(bool open) {
+        if (open) {
+            Hardware::claw.move_relative(-120, 60);
+            Controller::clawIntake = false;
         }
-        else if(!goUp && lastPositionUp) {
-            Hardware::flipClaw.move_absolute(280, 200);
-            openClaw(false);
-        }
-        lastPositionUp = goUp;
     }
 }

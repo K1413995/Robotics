@@ -10,18 +10,17 @@ namespace Ports {
     constexpr int VERTICAL = 6;
     constexpr int HORIZONTAL = 9;
 
-    constexpr int LEFT_FRONT = -15;
-    constexpr int LEFT_BACK = -14;
-    constexpr int RIGHT_FRONT = 5;
-    constexpr int RIGHT_BACK = 7;
+    constexpr int LEFT_FRONT = -11;
+    constexpr int LEFT_BACK = -12;
+    constexpr int RIGHT_FRONT = 20;
+    constexpr int RIGHT_BACK = 18;
 
-    constexpr int LIFT_LEFT = 13;
-    constexpr int LIFT_RIGHT = -11;
+    constexpr int LIFT_LEFT = 5;
+    constexpr int LIFT_RIGHT = 7;
 
     constexpr int TOGGLE = 8;
 
-    constexpr char OPEN_CLAW = 'A';
-    constexpr int FLIP_CLAW = 17;
+    constexpr bool CLAW = -19;
 }
 
 namespace Hardware {
@@ -35,18 +34,15 @@ namespace Hardware {
 
     extern pros::Motor toggle;
 
-    extern pros::adi::DigitalOut openClaw;
-    extern pros::Motor flipClaw;
+    extern pros::Motor claw;
 
     // Sensors
     extern pros::IMU imu;
 
     extern pros::Rotation verticalSensor;
-    extern pros::Rotation horizontalSensor;
 
     // LemLib tracking wheels
     extern lemlib::TrackingWheel vertical;
-    extern lemlib::TrackingWheel horizontal;
 
     extern lemlib::OdomSensors sensors;
 
