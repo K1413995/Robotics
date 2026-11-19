@@ -31,8 +31,9 @@ namespace Controller {
         liftUp = Hardware::controller.get_digital(driver.liftUp);
         liftDown = Hardware::controller.get_digital(driver.liftDown);
 
-        clawIntake = Hardware::controller.get_digital(driver.claw);
-        clawTap = Hardware::controller.get_digital_new_press(driver.claw);
+        clawTap = Hardware::controller.get_digital_new_release(driver.claw); //needs to be above to differentiate tap vs hold
+        clawIntake = Hardware::controller.get_digital(driver.claw) && !clawTap;
+        
 
         toggleOnce = Hardware::controller.get_digital_new_press(driver.toggle);
     }
