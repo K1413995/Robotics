@@ -15,7 +15,7 @@ namespace Ports {
     constexpr int RIGHT_FRONT = 20;
     constexpr int RIGHT_BACK = 18;
 
-    constexpr int LIFT_LEFT = 5;
+    constexpr int LIFT_LEFT = -5;
     constexpr int LIFT_RIGHT = 7;
 
     constexpr int TOGGLE = 8;
