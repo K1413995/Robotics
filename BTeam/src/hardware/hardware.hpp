@@ -20,7 +20,7 @@ namespace Ports {
 
     constexpr int TOGGLE = 8;
 
-    constexpr bool CLAW = -19;
+    constexpr int CLAW = -19;
 }
 
 namespace Hardware {

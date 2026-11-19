@@ -1,9 +1,37 @@
 #include "controls.hpp"
-#include "pros/misc.h"
+#include "../hardware/hardware.hpp"
 
-Controls base {};
-Controls john {
-    .liftUp = pros::E_CONTROLLER_DIGITAL_B,
-    .liftDown = pros::E_CONTROLLER_DIGITAL_DOWN,
-    .toggle = pros::E_CONTROLLER_DIGITAL_L2
-};
+void Button::update() {
+    bool current = Hardware::controller.get_digital(control);
+
+    std::uint32_t currentTime = pros::millis();
+
+    pressedEvent = current && !active;
+    releasedEvent = !current && active;
+    tapEvent = false;
+
+    if (pressedEvent) {
+        startedHolding = currentTime;
+    }
+
+    if (releasedEvent) {
+        tapEvent = (currentTime - startedHolding) < holdThreshold;
+    }
+
+    active = current;
+}
+
+bool Button::held() const {
+    return active && (pros::millis() - startedHolding >= holdThreshold);
+}
+
+
+void Controls::update(Controls& driver) {
+    driver.auton.update();
+
+    driver.liftUp.update();
+    driver.liftDown.update();
+
+    driver.claw.update();
+    driver.toggle.update();
+}

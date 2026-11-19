@@ -9,7 +9,6 @@ namespace Components {
     void clawOpen(bool open) {
         if (open) {
             Hardware::claw.move_relative(-120, 60);
-            Controller::clawIntake = false;
         }
     }
 }

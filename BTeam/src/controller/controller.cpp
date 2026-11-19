@@ -1,55 +1,33 @@
 #include "controller.hpp"
 #include "../components/components.hpp"
 #include "../lemlib/drivetrain.hpp"
-#include <cmath>
-
-//globals
+#include "../hardware/hardware.hpp"
 
 namespace Controller {
 
-    // Auton start
-    bool auton = false;
-    // Current controller readings
-    int drive = 0;
-    int steer = 0;
-
-    bool liftUp = false;
-    bool liftDown = false;
-
-    bool clawTap = false;
-    bool clawIntake = false;
-
-    bool toggleOnce = false;
-
-    // Updates controller values
-    void update(const Controls& driver) {
-        //auton = Hardware::controller.get_digital_new_press(driver.auton);
-
-        drive = Hardware::controller.get_analog(driver.leftY);
-        steer = Hardware::controller.get_analog(driver.rightX);
-
-        liftUp = Hardware::controller.get_digital(driver.liftUp);
-        liftDown = Hardware::controller.get_digital(driver.liftDown);
-
-        clawTap = Hardware::controller.get_digital_new_release(driver.claw); //needs to be above to differentiate tap vs hold
-        clawIntake = Hardware::controller.get_digital(driver.claw) && !clawTap;
-        
-
-        toggleOnce = Hardware::controller.get_digital_new_press(driver.toggle);
-    }
-
-    // Looped logic
-    void execute() {
+    void execute(const Controls& driver) {
         //drive
+        int drive = Hardware::controller.get_analog(driver.leftY);
+        int steer = Hardware::controller.get_analog(driver.rightX);
+
         chassis.arcade(drive, steer);
+
         //lift
-        if (liftUp) {Components::lift(95);}
-        else if (liftDown) {Components::lift(-95);}
-        else {Components::lift(0);}
+        if (driver.liftUp.pressed()) {
+            Components::lift(95);
+        }
+        else if (driver.liftDown.pressed()) {
+            Components::lift(-95);
+        }
+        else {
+            Components::lift(0);
+        }
+
         //claw
-        Components::clawIntake(clawIntake);
-        Components::clawOpen(clawTap); //flip input
+        Components::clawOpen(driver.claw.tapped());
+        Components::clawIntake(driver.claw.held());
+
         //toggle
-        Components::toggle(toggleOnce);
+        Components::toggle(driver.toggle.newPress());
     }
 }

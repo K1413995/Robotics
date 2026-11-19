@@ -6,7 +6,6 @@
 #include "hardware/hardware.hpp"
 #include "controller/controller.hpp"
 #include "controller/controls.hpp"
-#include "components/components.hpp"
 
 void on_center_button() {}
 
@@ -26,9 +25,9 @@ void autonomous() {
 
 void opcontrol() {
     while (true) {
-        if (Controller::auton) {autonomous();}
-        Controller::update(john);
-        Controller::execute();
+        if (john.auton.newPress()) {autonomous();}
+        Controls::update(john);
+        Controller::execute(john);
         pros::delay(20);
     }
 }
