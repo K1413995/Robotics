@@ -8,7 +8,7 @@ namespace Controller {
     void execute(const Controls& driver) {
         //drive
         int drive = Hardware::controller.get_analog(driver.leftY);
-        int steer = Hardware::controller.get_analog(driver.rightX);
+        int steer = Hardware::controller.get_analog(driver.rightX) * .95; //reduce by 5% to compensate
 
         chassis.arcade(drive, steer);
 
@@ -24,8 +24,8 @@ namespace Controller {
         }
 
         //claw
-        Components::clawOpen(driver.claw.tapped());
-        Components::clawIntake(driver.claw.held());
+        Components::clawOpen(driver.clawOpen.tapped());
+        Components::clawIntake(driver.clawIntake.held());
 
         //toggle
         Components::toggle(driver.toggle.newPress());

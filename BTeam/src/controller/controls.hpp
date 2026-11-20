@@ -39,7 +39,9 @@ struct Controls {
     Button liftUp{pros::E_CONTROLLER_DIGITAL_L1};
     Button liftDown{pros::E_CONTROLLER_DIGITAL_L2};
 
-    Button claw{pros::E_CONTROLLER_DIGITAL_R2};
+    Button clawIntake{pros::E_CONTROLLER_DIGITAL_R2};
+    Button clawOpen{pros::E_CONTROLLER_DIGITAL_R2};
+
     Button toggle{pros::E_CONTROLLER_DIGITAL_Y};
 
     static void update(Controls& driver);
@@ -52,5 +54,6 @@ inline Controls base{};
 inline Controls john{
     .liftUp = Button(pros::E_CONTROLLER_DIGITAL_B),
     .liftDown = Button(pros::E_CONTROLLER_DIGITAL_DOWN),
+    .clawOpen = Button(pros::E_CONTROLLER_DIGITAL_R1),
     .toggle = Button(pros::E_CONTROLLER_DIGITAL_L2)
 };

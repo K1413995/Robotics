@@ -32,6 +32,7 @@ void Controls::update(Controls& driver) {
     driver.liftUp.update();
     driver.liftDown.update();
 
-    driver.claw.update();
+    driver.clawIntake.update();
+    driver.clawOpen.update();
     driver.toggle.update();
 }

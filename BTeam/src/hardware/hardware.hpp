@@ -6,21 +6,24 @@
 #include "pros/rotation.hpp"
 
 namespace Ports {
-    constexpr int IMU = 2;
-    constexpr int VERTICAL = 6;
+    constexpr int IMU = 6;
+    constexpr int VERTICAL = 12;
     constexpr int HORIZONTAL = 9;
+    constexpr int LEFT_DISTANCE = 0;
+    constexpr int BACK_DISTANCE = 0;
+    constexpr int RIGHT_DISTANCE = 0;
 
-    constexpr int LEFT_FRONT = -11;
-    constexpr int LEFT_BACK = -12;
-    constexpr int RIGHT_FRONT = 20;
-    constexpr int RIGHT_BACK = 18;
+    constexpr int LEFT_FRONT = -3;
+    constexpr int LEFT_BACK = -11;
+    constexpr int RIGHT_FRONT = 8;
+    constexpr int RIGHT_BACK = 20;
 
     constexpr int LIFT_LEFT = -5;
     constexpr int LIFT_RIGHT = 7;
 
     constexpr int TOGGLE = 8;
 
-    constexpr int CLAW = -19;
+    constexpr int CLAW = -21;
 }
 
 namespace Hardware {
@@ -37,9 +40,10 @@ namespace Hardware {
     extern pros::Motor claw;
 
     // Sensors
-    extern pros::IMU imu;
-
-    extern pros::Rotation verticalSensor;
+    //extern pros::IMU imu;
+    //extern pros::Rotation verticalSensor;
+    //extern pros::Distance leftDistance;
+    //extern pros::Distance leftDistance;
 
     // LemLib tracking wheels
     extern lemlib::TrackingWheel vertical;

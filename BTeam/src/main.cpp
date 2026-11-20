@@ -13,6 +13,7 @@ void initialize() {
     Hardware::liftMotors.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
     chassis.calibrate();
+    Hardware::claw.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 }
 
 void disabled() {}
