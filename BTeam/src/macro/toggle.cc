@@ -1,4 +1,4 @@
-// MACROS
+// TOGGLE MACRO
 #include "macro.hpp"
 #include "../components/components.hpp"
 #include "../hardware/hardware.hpp"
@@ -9,7 +9,6 @@
 namespace Macro {
 namespace {
 
-// TOGGLE MACRO
 // Lift angle to start from, in degrees, using the angle on the brain screen
 constexpr double TOGGLE_LIFT_ANGLE = 21;
 // How many degrees the lift rises after backing up
@@ -116,7 +115,7 @@ bool toggle(bool pressed, bool driverInput) {
   } else if (!driverInput) {
     inputCleared = true;
   } else if (inputCleared) {
-    cancel();
+    cancelToggle();
     return false;
   }
 
@@ -124,7 +123,7 @@ bool toggle(bool pressed, bool driverInput) {
   return step != Step::Idle;
 }
 
-void cancel() {
+void cancelToggle() {
   if (step == Step::Idle) {
     return;
   }

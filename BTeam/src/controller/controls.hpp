@@ -38,6 +38,8 @@ struct Controls {
   Button liftUp{pros::E_CONTROLLER_DIGITAL_L1};
   Button liftDown{pros::E_CONTROLLER_DIGITAL_L2};
   Button toggleMacro{pros::E_CONTROLLER_DIGITAL_X};
+  Button turnLeft{pros::E_CONTROLLER_DIGITAL_LEFT};
+  Button turnRight{pros::E_CONTROLLER_DIGITAL_RIGHT};
 
   Button clawIntake{pros::E_CONTROLLER_DIGITAL_R2};
   Button clawOpen{pros::E_CONTROLLER_DIGITAL_R2};

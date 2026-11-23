@@ -15,17 +15,28 @@ void execute(const Controls &driver) {
   int steer = Hardware::controller.get_analog(driver.rightX);
 
   // macros control the drive and lift until they finish or get canceled
-  const bool driverInput = std::abs(drive) > MACRO_CANCEL_STICK ||
-                           std::abs(steer) > MACRO_CANCEL_STICK ||
-                           driver.liftUp.pressed() || driver.liftDown.pressed();
-  const bool macroRunning =
+  const bool stickInput = std::abs(drive) > MACRO_CANCEL_STICK ||
+                          std::abs(steer) > MACRO_CANCEL_STICK;
+  const bool driverInput =
+      stickInput || driver.liftUp.pressed() || driver.liftDown.pressed();
+
+  // The toggle needs the drive, so it takes over from a turn
+  if (driver.toggleMacro.newPress()) {
+    Macro::cancelTurn();
+  }
+  const bool toggleRunning =
       Macro::toggle(driver.toggleMacro.newPress(), driverInput);
+  const bool turning =
+      !toggleRunning && Macro::turn(driver.turnLeft.newPress(),
+                                    driver.turnRight.newPress(), stickInput);
 
-  if (!macroRunning) {
+  if (!toggleRunning) {
     // drive
-    chassis.arcade(drive, steer);
+    if (!turning) {
+      chassis.arcade(drive, steer);
+    }
 
-    // lift
+    // lift still works during a turn
     if (driver.liftUp.pressed()) {
       Components::lift(95);
     } else if (driver.liftDown.pressed()) {

@@ -10,6 +10,7 @@
 #include "interface/interface.hpp"
 #include "interface/settings.hpp"
 #include "interface/testmode.hpp"
+#include "macro/macro.hpp"
 #include "pid/pidtune.hpp"
 
 // true uploads the TEST code: controller modes, auton on A, and the PID tuner
@@ -29,6 +30,7 @@ void initialize() {
   }
   Hardware::liftMotors.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
   Components::startLift();
+  Macro::startMovement();
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
   chassis.calibrate();
   Hardware::claw.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);

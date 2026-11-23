@@ -16,6 +16,7 @@
 #include "pidscreen.hpp"
 #include "pidstate.hpp"
 #include "pros/rtos.hpp"
+#include "turnpid.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -199,6 +200,8 @@ void applyGains() {
   }
   setPid(chassis.lateralPID, SYS_DRIVE, PidConfig::DRIVE.windup);
   setPid(chassis.angularPID, SYS_TURN, PidConfig::TURN.windup);
+  TurnPid::setGains({gainValue(SYS_TURN, 0), gainValue(SYS_TURN, 1),
+                     gainValue(SYS_TURN, 2)});
   LiftPid::setGains({gainValue(SYS_LIFT, 0), gainValue(SYS_LIFT, 1),
                      gainValue(SYS_LIFT, 2)});
 }
