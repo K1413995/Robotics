@@ -1,6 +1,8 @@
 #include "controls.hpp"
 #include "../hardware/hardware.hpp"
 
+void Stick::update() { current = Hardware::controller.get_analog(channel); }
+
 void Button::update() {
   bool current = Hardware::controller.get_digital(control);
 
@@ -26,6 +28,10 @@ bool Button::held() const {
 }
 
 void Controls::update(Controls &driver) {
+  driver.leftY.update();
+  driver.rightX.update();
+  driver.rightY.update();
+
   driver.liftUp.update();
   driver.liftDown.update();
   driver.toggleMacro.update();

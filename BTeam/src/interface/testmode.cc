@@ -80,6 +80,7 @@ void haltRobot() {
 
 void enterMode(Mode next) {
   mode = next;
+  Components::liftRaw(0); // a held lift stick can't carry into the next mode
   // A press from the old mode can't count as half of a double tap in this one
   autoTaps = DoubleTap{};
   driverTaps = DoubleTap{};

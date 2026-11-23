@@ -108,6 +108,7 @@ bool toggle(bool pressed, bool driverInput) {
       return false;
     }
     Components::lift(0);
+    Components::liftRaw(0); // a held lift stick can't fight the macro
     Components::liftTo(TOGGLE_LIFT_ANGLE);
     // A stick already held against the wall shouldn't cancel the macro
     inputCleared = !driverInput;

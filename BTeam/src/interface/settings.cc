@@ -76,10 +76,9 @@ bool robotButtonPressed(const Button &button, const Controls &driver) {
 
 // If the driver forgets to confirm, using the robot closes the menu
 bool driverTookOver(const Controls &driver) {
-  return std::abs(Hardware::controller.get_analog(driver.leftY)) >
-             STICK_DEADBAND ||
-         std::abs(Hardware::controller.get_analog(driver.rightX)) >
-             STICK_DEADBAND ||
+  return driver.leftY.past(STICK_DEADBAND) ||
+         driver.rightX.past(STICK_DEADBAND) ||
+         driver.rightY.past(STICK_DEADBAND) ||
          robotButtonPressed(driver.liftUp, driver) ||
          robotButtonPressed(driver.liftDown, driver) ||
          robotButtonPressed(driver.toggleMacro, driver) ||

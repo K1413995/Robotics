@@ -1,7 +1,7 @@
 // LIFT
 // Picks who controls the lift each loop:
 //   Driver holding a button -> LiftDriver smoothing (controller/liftdriver.cc)
-//   Macro raw power         -> straight to the motors
+//   Macro or stick power    -> straight to the motors
 //   Button just released    -> LiftDriver fades the speed out
 //   Everything else         -> LiftPid goes to or holds a target (pid/liftpid.cc)
 // Driver tuning is in liftconfig.hpp, PID tuning is in pid/pidconfig.hpp
@@ -40,11 +40,12 @@ static void stepLift() {
 
   // Sensor unplugged: no PID or limits, but the driver can still use the lift
   if (angle == PROS_ERR) {
+    const int power = driver != 0 ? driver : rawPower.load();
     LiftPid::clear();
     LiftDriver::reset();
-    handMoving = driver != 0;
+    handMoving = power != 0;
     liftDone = true;
-    LiftCore::setPower(driver);
+    LiftCore::setPower(power);
     return;
   }
   const double height = LiftCore::angleToHeight(angle / 100.0);
@@ -120,7 +121,7 @@ void Components::liftBy(double degrees) {
   }
 }
 
-// Raw motor power for macros, 0 stops and holds wherever the lift ends up
+// Raw motor power for macros and the lift stick, 0 stops and holds in place
 void Components::liftRaw(int power) {
   if (power != 0) {
     liftDone = false;

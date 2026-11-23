@@ -3,6 +3,21 @@
 #include "pros/misc.h"
 #include "pros/rtos.hpp"
 #include <cstdint>
+#include <cstdlib>
+
+class Stick {
+private:
+  pros::controller_analog_e_t channel;
+  int current = 0;
+
+public:
+  explicit Stick(pros::controller_analog_e_t analog) : channel(analog) {}
+
+  void update();
+
+  int value() const { return current; } // -127 to 127
+  bool past(int amount) const { return std::abs(current) > amount; }
+};
 
 class Button {
 private:
@@ -32,8 +47,9 @@ public:
 };
 
 struct Controls {
-  pros::controller_analog_e_t leftY = pros::E_CONTROLLER_ANALOG_LEFT_Y;
-  pros::controller_analog_e_t rightX = pros::E_CONTROLLER_ANALOG_RIGHT_X;
+  Stick leftY{pros::E_CONTROLLER_ANALOG_LEFT_Y};
+  Stick rightX{pros::E_CONTROLLER_ANALOG_RIGHT_X};
+  Stick rightY{pros::E_CONTROLLER_ANALOG_RIGHT_Y};
 
   Button liftUp{pros::E_CONTROLLER_DIGITAL_L1};
   Button liftDown{pros::E_CONTROLLER_DIGITAL_L2};

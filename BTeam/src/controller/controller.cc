@@ -2,6 +2,7 @@
 #include "../components/components.hpp"
 #include "../hardware/hardware.hpp"
 #include "../macro/macro.hpp"
+#include "liftstick.hpp" // LIFT STICK: remove this line
 
 #include <cstdlib>
 
@@ -11,14 +12,18 @@ namespace Controller {
 constexpr int MACRO_CANCEL_STICK = 15;
 
 void execute(const Controls &driver) {
-  int drive = Hardware::controller.get_analog(driver.leftY);
-  int steer = Hardware::controller.get_analog(driver.rightX);
+  const int drive = driver.leftY.value();
+  // LIFT STICK: remove the next line and use driver.rightX.value() for steer
+  const LiftStick::Output stick = LiftStick::read(driver);
+  const int steer = stick.steer;
 
   // macros control the drive and lift until they finish or get canceled
-  const bool stickInput = std::abs(drive) > MACRO_CANCEL_STICK ||
-                          std::abs(steer) > MACRO_CANCEL_STICK;
-  const bool driverInput =
-      stickInput || driver.liftUp.pressed() || driver.liftDown.pressed();
+  const bool stickInput =
+      driver.leftY.past(MACRO_CANCEL_STICK) ||
+      std::abs(steer) > MACRO_CANCEL_STICK;
+  const bool driverInput = stickInput || driver.liftUp.pressed() ||
+                           driver.liftDown.pressed() ||
+                           stick.liftPower != 0; // LIFT STICK: remove this
 
   // The toggle needs the drive, so it takes over from a turn
   if (driver.toggleMacro.newPress()) {
@@ -44,6 +49,7 @@ void execute(const Controls &driver) {
     } else {
       Components::lift(0);
     }
+    Components::liftRaw(stick.liftPower); // LIFT STICK: remove this line
   }
 
   // claw

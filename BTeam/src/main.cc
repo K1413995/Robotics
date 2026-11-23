@@ -38,11 +38,20 @@ void initialize() {
   setStartPose();
 }
 
-void disabled() {}
+// Driver control can end with a lift input still held, so clear it
+static void clearDriverLift() {
+  Components::lift(0);
+  Components::liftRaw(0);
+}
+
+void disabled() { clearDriverLift(); }
 
 void competition_initialize() {}
 
-void autonomous() { auton(); }
+void autonomous() {
+  clearDriverLift();
+  auton();
+}
 
 void opcontrol() {
   const bool testing = TEST_MODE && !pros::competition::is_connected();

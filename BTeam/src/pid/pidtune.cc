@@ -382,9 +382,9 @@ bool moveEnded() {
 }
 
 void updateRun(const Controls &driver) {
-  const bool stickMoved =
-      std::abs(Hardware::controller.get_analog(driver.leftY)) > STOP_STICK ||
-      std::abs(Hardware::controller.get_analog(driver.rightX)) > STOP_STICK;
+  const bool stickMoved = driver.leftY.past(STOP_STICK) ||
+                          driver.rightX.past(STOP_STICK) ||
+                          driver.rightY.past(STOP_STICK);
   if (driver.menuSelect.newPress() || driver.menuBack.newPress() ||
       stickMoved) {
     stopRun(PHASE_STOPPED);
