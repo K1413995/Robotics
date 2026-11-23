@@ -9,7 +9,6 @@
 namespace Ports {
 constexpr int IMU = 6;
 constexpr int VERTICAL = 12;
-constexpr int HORIZONTAL = 9;
 constexpr int LEFT_DISTANCE = 14;
 constexpr int BACK_DISTANCE = 17;
 constexpr int RIGHT_DISTANCE = 19;
@@ -38,7 +37,7 @@ extern pros::MotorGroup rightMotors;
 extern pros::Motor claw;
 
 // Sensors
-// extern pros::IMU imu;
+extern pros::IMU imu;
 // extern pros::Rotation verticalSensor;
 extern pros::Rotation liftRotation;
 extern pros::Distance leftDistance;
@@ -47,12 +46,6 @@ extern pros::Distance backDistance;
 
 // LemLib tracking wheels
 extern lemlib::TrackingWheel vertical;
-
-extern lemlib::OdomSensors sensors;
-
-// LemLib controllers
-extern lemlib::ControllerSettings lateralController;
-extern lemlib::ControllerSettings angularController;
 
 // Driver curves
 extern lemlib::ExpoDriveCurve throttleCurve;

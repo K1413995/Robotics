@@ -2,8 +2,8 @@
 // Uses the distance sensors and heading to find the robot on the field.
 // Field (0, 0) is the center. Heading 0 faces +Y and turns clockwise (LemLib).
 #include "position.hpp"
+#include "../components/components.hpp"
 #include "../hardware/hardware.hpp"
-#include "../lemlib/drivetrain.hpp"
 #include "auton.hpp"
 
 #include <algorithm>

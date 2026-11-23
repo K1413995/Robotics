@@ -26,8 +26,6 @@ bool Button::held() const {
 }
 
 void Controls::update(Controls &driver) {
-  driver.auton.update();
-
   driver.liftUp.update();
   driver.liftDown.update();
   driver.toggleMacro.update();
@@ -40,8 +38,9 @@ void Controls::update(Controls &driver) {
   driver.menuLeft.update();
   driver.menuRight.update();
   driver.menuSelect.update();
+  driver.menuBack.update();
 
-  driver.tuneOpenA.update();
-  driver.tuneOpenB.update();
-  driver.tuneBack.update();
+  driver.autoMode.update();
+  driver.driverMode.update();
+  driver.pidMode.update();
 }

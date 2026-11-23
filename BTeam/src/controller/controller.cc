@@ -1,7 +1,6 @@
 #include "controller.hpp"
 #include "../components/components.hpp"
 #include "../hardware/hardware.hpp"
-#include "../lemlib/drivetrain.hpp"
 #include "../macro/macro.hpp"
 
 #include <cstdlib>

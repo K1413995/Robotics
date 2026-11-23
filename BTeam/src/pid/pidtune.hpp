@@ -6,7 +6,10 @@ namespace PidTune {
 // Sets up the tuner's brain screen, call once in initialize()
 void start();
 
-// Call every loop. Hold X + Y for 1 second to open the tuner.
-// Returns true while the tuner is controlling the robot.
-bool update(const Controls &driver);
+// Called by the test code when entering and leaving PID mode
+void open();
+void close();
+
+// Call every loop while in PID mode
+void update(const Controls &driver);
 } // namespace PidTune

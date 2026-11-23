@@ -1,24 +1,20 @@
 // SETTINGS
-// Pre-match menu on the controller screen
-// Up and down pick a setting, left and right change it, L1 confirms
+// Pre-match menu on the controller screen, only in the test code
+// Up and down pick a setting, left and right change it, A confirms
 #include "settings.hpp"
 #include "../auton/auton.hpp"
 #include "../hardware/hardware.hpp"
+#include "ctrlscreen.hpp"
 #include "pros/misc.hpp"
 
-#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 
 namespace Settings {
 namespace {
 
-// The controller screen is slow, so space out updates
-constexpr std::uint32_t SCREEN_DELAY_MS = 60;
 // Moving a stick past this closes the menu so the driver is never locked out
 constexpr int STICK_DEADBAND = 15;
-constexpr int SCREEN_LINES = 3;
-constexpr int SCREEN_WIDTH = 15;
 
 struct Setting {
   const char *name;
@@ -36,48 +32,17 @@ constexpr int SETTING_COUNT = sizeof(settings) / sizeof(settings[0]);
 
 bool menuOpen = false;
 bool menuUsed = false;
+bool positionFound = false;
 int row = 0;
-char screen[SCREEN_LINES][SCREEN_WIDTH + 1] = {};
-bool screenChanged[SCREEN_LINES] = {};
-const char *pendingRumble = nullptr;
-std::uint32_t lastScreenTime = 0;
-
-void writeLine(int line, const char *text) {
-  std::snprintf(screen[line], sizeof(screen[line]), "%-*s", SCREEN_WIDTH, text);
-  screenChanged[line] = true;
-}
-
-// Sends one update at a time to the controller
-void updateScreen() {
-  const std::uint32_t now = pros::millis();
-  if (now - lastScreenTime < SCREEN_DELAY_MS) {
-    return;
-  }
-  if (pendingRumble != nullptr) {
-    Hardware::controller.rumble(pendingRumble);
-    pendingRumble = nullptr;
-    lastScreenTime = now;
-    return;
-  }
-  for (int line = 0; line < SCREEN_LINES; line++) {
-    if (screenChanged[line]) {
-      if (Hardware::controller.set_text(line, 0, screen[line]) != PROS_ERR) {
-        screenChanged[line] = false;
-      }
-      lastScreenTime = now;
-      return;
-    }
-  }
-}
 
 void drawMenu() {
   const Setting &setting = settings[row];
   char text[32];
   std::snprintf(text, sizeof(text), "%s: <%s>", setting.name,
                 setting.options[setting.selected]);
-  writeLine(0, text);
-  writeLine(1, "Arrows to edit");
-  writeLine(2, "L1 to confirm");
+  CtrlScreen::write(0, text);
+  CtrlScreen::write(1, "Arrows to edit");
+  CtrlScreen::write(2, "A to confirm");
 }
 
 void moveRow(int change) {
@@ -95,16 +60,7 @@ void changeOption(int change) {
 // Reads the walls for the chosen side, then reports the result
 void closeMenu() {
   menuOpen = false;
-  const bool found = setStartPose();
-
-  const Setting &sideSetting = settings[SIDE_SETTING];
-  char text[32];
-  std::snprintf(text, sizeof(text), "Side: %s",
-                sideSetting.options[sideSetting.selected]);
-  writeLine(0, text);
-  writeLine(1, found ? "Position OK" : "CHECK POSITION");
-  writeLine(2, "");
-  pendingRumble = found ? "." : "---";
+  CtrlScreen::rumble(readPosition() ? "." : "---");
 }
 
 bool isMenuButton(const Button &button, const Controls &driver) {
@@ -128,7 +84,8 @@ bool driverTookOver(const Controls &driver) {
          robotButtonPressed(driver.liftDown, driver) ||
          robotButtonPressed(driver.toggleMacro, driver) ||
          robotButtonPressed(driver.clawIntake, driver) ||
-         robotButtonPressed(driver.clawOpen, driver);
+         robotButtonPressed(driver.clawOpen, driver) ||
+         driver.driverMode.pressed() || driver.pidMode.pressed();
 }
 
 } // namespace
@@ -136,6 +93,17 @@ bool driverTookOver(const Controls &driver) {
 Side side() {
   return settings[SIDE_SETTING].selected == 0 ? Side::Left : Side::Right;
 }
+
+void setSide(Side next) {
+  settings[SIDE_SETTING].selected = next == Side::Left ? 0 : 1;
+}
+
+bool readPosition() {
+  positionFound = setStartPose();
+  return positionFound;
+}
+
+bool positionOk() { return positionFound; }
 
 void open() {
   // Only once per program, and never with a competition switch or field,
@@ -150,12 +118,11 @@ void open() {
 }
 
 bool update(const Controls &driver) {
-  updateScreen();
   if (!menuOpen) {
     return false;
   }
 
-  if (driver.auton.newPress() || driverTookOver(driver)) {
+  if (driverTookOver(driver)) {
     closeMenu();
     return false;
   }

@@ -23,7 +23,6 @@ pros::MotorGroup rightMotors({Ports::RIGHT_FRONT, Ports::RIGHT_BACK},
 pros::IMU imu(Ports::IMU);
 
 pros::Rotation verticalSensor(Ports::VERTICAL);
-pros::Rotation horizontalSensor(Ports::HORIZONTAL);
 pros::Rotation liftRotation(Ports::LIFT_ROTATION);
 
 pros::Distance leftDistance(Ports::LEFT_DISTANCE);
@@ -31,15 +30,6 @@ pros::Distance rightDistance(Ports::RIGHT_DISTANCE);
 pros::Distance backDistance(Ports::BACK_DISTANCE);
 
 lemlib::TrackingWheel vertical(&verticalSensor, lemlib::Omniwheel::NEW_275, 0);
-
-lemlib::TrackingWheel horizontal(&horizontalSensor, lemlib::Omniwheel::NEW_275,
-                                 0);
-
-lemlib::OdomSensors sensors(&vertical, // vertical tracking wheel
-                            nullptr,   // second vertical wheel
-                            nullptr,   // horizontal tracking wheel
-                            nullptr,   // second horizontal wheel
-                            &imu);
 
 // Controller config
 // input curve for throttle input during driver control

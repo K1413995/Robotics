@@ -2,7 +2,7 @@
 #include "../components/components.hpp"
 #include "../hardware/hardware.hpp"
 #include "../interface/settings.hpp"
-#include "../lemlib/drivetrain.hpp"
+#include "autonrun.hpp"
 #include "position.hpp"
 
 #include <cmath>
@@ -24,9 +24,19 @@ bool setStartPose() {
                           onRightSide() ? "right" : "left");
 }
 
+// Waits for the current move. False means the test code canceled the auton
+static bool finished() {
+  chassis.waitUntilDone();
+  return !AutonRun::canceled();
+}
+
 // All points are field coordinates, see the plane in auton.hpp
+// After every move use: if (!finished()) return;
+// For pauses use: if (!AutonRun::wait(500)) return;
 void auton() {
   // Left side: forward and right to (120, -75) cm, ending 90 degrees right
   chassis.moveToPose(cm(120), sideY(cm(-55)), sideHeading(0), 3000);
-  chassis.waitUntilDone();
+  if (!finished()) {
+    return;
+  }
 }

@@ -1,16 +1,22 @@
 // INTERFACE
 // Brain screen with position, motor temps, distance sensors, and lift rotation
 #include "interface.hpp"
+#include "../components/components.hpp"
 #include "../hardware/hardware.hpp"
-#include "../lemlib/drivetrain.hpp"
 #include "liblvgl/lvgl.h"
 
+#include <atomic>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
 
 namespace Interface {
 namespace {
+
+// Set from the driver task, drawn on the display task
+std::atomic<const char *> modeLabel{nullptr};
+const char *shownMode = nullptr;
+lv_obj_t *teamText = nullptr;
 
 // SETTINGS
 // Motor turns yellow at this temperature, in Celsius
@@ -315,6 +321,12 @@ void refresh(lv_timer_t *) {
     }
   }
 
+  const char *label = modeLabel.load();
+  if (label != nullptr && label != shownMode) {
+    shownMode = label;
+    lv_label_set_text(teamText, label);
+  }
+
   refreshDistances();
   refreshRotation();
   refreshPosition();
@@ -396,8 +408,8 @@ void buildScreen(lv_timer_t *) {
 
   lv_obj_t *header =
       makeBox(screen, 0, 0, SCREEN_WIDTH, HEADER_HEIGHT, HEADER, 0);
-  makeText(header, &lv_font_montserrat_14, WHITE, "63310B", LV_ALIGN_LEFT_MID,
-           8, 0);
+  teamText = makeText(header, &lv_font_montserrat_14, WHITE, "63310B",
+                      LV_ALIGN_LEFT_MID, 8, 0);
   for (int i = 0; i < 3; i++) {
     positionText[i] = makeText(header, &lv_font_montserrat_12, WHITE, "--",
                                LV_ALIGN_LEFT_MID, POSITION_X[i], 0);
@@ -422,5 +434,7 @@ void start() {
   lv_timer_t *timer = lv_timer_create(buildScreen, 0, nullptr);
   lv_timer_set_repeat_count(timer, 1);
 }
+
+void setMode(const char *label) { modeLabel = label; }
 
 } // namespace Interface

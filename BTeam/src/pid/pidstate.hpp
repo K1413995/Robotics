@@ -5,39 +5,48 @@
 // Values shared between the tuner and its brain screen
 namespace PidTune {
 
-constexpr int GAIN_COUNT = 6;
-constexpr int DIGIT_COUNT = 5; // 000.00
-constexpr int ACTION_COUNT = 4;
+constexpr int SYSTEM_COUNT = 3;
+constexpr int TERM_COUNT = 3;
+constexpr int DIGIT_COUNT = 5;    // 000.00
+constexpr int RESET_ROW = 3;      // the row below kP, kI, kD
 constexpr int GRAPH_POINTS = 150; // 3 seconds at one point every 20 ms
 
-enum Row {
-  DRIVE_KP,
-  DRIVE_KI,
-  DRIVE_KD,
-  STEER_KP,
-  STEER_KI,
-  STEER_KD,
-  RUN_DRIVE,
-  RUN_STEER,
-  RESET_GAINS,
-  EXIT_TUNER,
-  ROW_COUNT
-};
+enum System { SYS_DRIVE, SYS_TURN, SYS_LIFT };
+inline constexpr const char *SYSTEM_NAMES[SYSTEM_COUNT] = {"DRIVE", "TURN",
+                                                           "LIFT"};
+inline constexpr const char *TERM_NAMES[TERM_COUNT] = {"kP", "kI", "kD"};
+
+enum Page { PAGE_GRAPH, PAGE_TUNE };
+
+// Where the arrow keys are working on the tune page
+enum Focus { FOCUS_TEST, FOCUS_DROPDOWN, FOCUS_VALUES, FOCUS_DIGIT };
 
 enum Phase { PHASE_READY, PHASE_RUNNING, PHASE_DONE, PHASE_STOPPED };
 
-enum Hint { HINT_NONE, HINT_OVERSHOOT, HINT_SHORT, HINT_SLOW, HINT_GOOD };
+enum Hint {
+  HINT_NONE,
+  HINT_OVERSHOOT,
+  HINT_SHORT,
+  HINT_SLOW,
+  HINT_GOOD,
+  HINT_NO_SENSOR
+};
 
 struct View {
   std::atomic<bool> open{false};
-  std::atomic<int> gains[GAIN_COUNT]{}; // hundredths, so 1050 is 10.50
-  std::atomic<int> row{DRIVE_KP};
+  // Hundredths, so 1050 is 10.50
+  std::atomic<int> gains[SYSTEM_COUNT][TERM_COUNT]{};
+
+  std::atomic<int> page{PAGE_GRAPH};
+  std::atomic<int> system{SYS_DRIVE};
+  std::atomic<int> focus{FOCUS_TEST};
+  std::atomic<int> dropdownRow{SYS_DRIVE};
+  std::atomic<int> valueRow{0};
   std::atomic<int> digit{2};
-  std::atomic<bool> editing{false};
 
   std::atomic<int> phase{PHASE_READY};
   std::atomic<int> hint{HINT_NONE};
-  std::atomic<bool> steerTest{false};
+  std::atomic<int> testSystem{SYS_DRIVE};
   std::atomic<int> moveNumber{0};
   std::atomic<int> moveCount{0};
   std::atomic<float> moveSize{0};

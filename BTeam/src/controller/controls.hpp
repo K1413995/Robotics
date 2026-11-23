@@ -32,8 +32,6 @@ public:
 };
 
 struct Controls {
-  Button auton{pros::E_CONTROLLER_DIGITAL_A};
-
   pros::controller_analog_e_t leftY = pros::E_CONTROLLER_ANALOG_LEFT_Y;
   pros::controller_analog_e_t rightX = pros::E_CONTROLLER_ANALOG_RIGHT_X;
 
@@ -44,17 +42,18 @@ struct Controls {
   Button clawIntake{pros::E_CONTROLLER_DIGITAL_R2};
   Button clawOpen{pros::E_CONTROLLER_DIGITAL_R2};
 
-  // Pre-match settings menu
+  // Menus and the PID tuner
   Button menuUp{pros::E_CONTROLLER_DIGITAL_UP};
   Button menuDown{pros::E_CONTROLLER_DIGITAL_DOWN};
   Button menuLeft{pros::E_CONTROLLER_DIGITAL_LEFT};
   Button menuRight{pros::E_CONTROLLER_DIGITAL_RIGHT};
-  Button menuSelect{pros::E_CONTROLLER_DIGITAL_L1};
+  Button menuSelect{pros::E_CONTROLLER_DIGITAL_A};
+  Button menuBack{pros::E_CONTROLLER_DIGITAL_B};
 
-  // PID tuner: hold both open buttons, B backs out or stops a test
-  Button tuneOpenA{pros::E_CONTROLLER_DIGITAL_X};
-  Button tuneOpenB{pros::E_CONTROLLER_DIGITAL_Y};
-  Button tuneBack{pros::E_CONTROLLER_DIGITAL_B};
+  // Test code only: double tap to switch modes
+  Button autoMode{pros::E_CONTROLLER_DIGITAL_A};
+  Button driverMode{pros::E_CONTROLLER_DIGITAL_X};
+  Button pidMode{pros::E_CONTROLLER_DIGITAL_Y};
 
   static void update(Controls &driver);
 };

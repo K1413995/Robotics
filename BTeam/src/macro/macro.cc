@@ -2,7 +2,6 @@
 #include "macro.hpp"
 #include "../components/components.hpp"
 #include "../hardware/hardware.hpp"
-#include "../lemlib/drivetrain.hpp"
 #include "pros/rtos.hpp"
 
 #include <cstdint>
