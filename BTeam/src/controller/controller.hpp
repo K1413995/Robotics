@@ -3,5 +3,5 @@
 #include "controls.hpp"
 
 namespace Controller {
-    void execute(const Controls& driver);
+void execute(const Controls &driver);
 }

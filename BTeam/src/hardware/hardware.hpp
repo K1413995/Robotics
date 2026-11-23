@@ -2,59 +2,59 @@
 
 #include "lemlib/api.hpp"
 #include "pros/abstract_motor.hpp"
+#include "pros/distance.hpp"
 #include "pros/misc.h"
 #include "pros/rotation.hpp"
 
 namespace Ports {
-    constexpr int IMU = 6;
-    constexpr int VERTICAL = 12;
-    constexpr int HORIZONTAL = 9;
-    constexpr int LEFT_DISTANCE = 0;
-    constexpr int BACK_DISTANCE = 0;
-    constexpr int RIGHT_DISTANCE = 0;
+constexpr int IMU = 6;
+constexpr int VERTICAL = 12;
+constexpr int HORIZONTAL = 9;
+constexpr int LEFT_DISTANCE = 14;
+constexpr int BACK_DISTANCE = 17;
+constexpr int RIGHT_DISTANCE = 19;
 
-    constexpr int LEFT_FRONT = -3;
-    constexpr int LEFT_BACK = -11;
-    constexpr int RIGHT_FRONT = 8;
-    constexpr int RIGHT_BACK = 20;
+constexpr int LEFT_FRONT = -3;
+constexpr int LEFT_BACK = -11;
+constexpr int RIGHT_FRONT = 8;
+constexpr int RIGHT_BACK = 20;
 
-    constexpr int LIFT_LEFT = -5;
-    constexpr int LIFT_RIGHT = 7;
+constexpr int LIFT_LEFT = -5;
+constexpr int LIFT_RIGHT = 7;
+constexpr int LIFT_ROTATION = 4;
 
-    constexpr int TOGGLE = 8;
-
-    constexpr int CLAW = -21;
-}
+constexpr int CLAW = -21;
+} // namespace Ports
 
 namespace Hardware {
-    // Controller
-    extern pros::Controller controller;
+// Controller
+extern pros::Controller controller;
 
-    // Motor Groups
-    extern pros::MotorGroup liftMotors;
-    extern pros::MotorGroup leftMotors;
-    extern pros::MotorGroup rightMotors;
+// Motor Groups
+extern pros::MotorGroup liftMotors;
+extern pros::MotorGroup leftMotors;
+extern pros::MotorGroup rightMotors;
 
-    extern pros::Motor toggle;
+extern pros::Motor claw;
 
-    extern pros::Motor claw;
+// Sensors
+// extern pros::IMU imu;
+// extern pros::Rotation verticalSensor;
+extern pros::Rotation liftRotation;
+extern pros::Distance leftDistance;
+extern pros::Distance rightDistance;
+extern pros::Distance backDistance;
 
-    // Sensors
-    //extern pros::IMU imu;
-    //extern pros::Rotation verticalSensor;
-    //extern pros::Distance leftDistance;
-    //extern pros::Distance leftDistance;
+// LemLib tracking wheels
+extern lemlib::TrackingWheel vertical;
 
-    // LemLib tracking wheels
-    extern lemlib::TrackingWheel vertical;
+extern lemlib::OdomSensors sensors;
 
-    extern lemlib::OdomSensors sensors;
+// LemLib controllers
+extern lemlib::ControllerSettings lateralController;
+extern lemlib::ControllerSettings angularController;
 
-    // LemLib controllers
-    extern lemlib::ControllerSettings lateralController;
-    extern lemlib::ControllerSettings angularController;
-
-    // Driver curves
-    extern lemlib::ExpoDriveCurve throttleCurve;
-    extern lemlib::ExpoDriveCurve steerCurve;
-}
+// Driver curves
+extern lemlib::ExpoDriveCurve throttleCurve;
+extern lemlib::ExpoDriveCurve steerCurve;
+} // namespace Hardware

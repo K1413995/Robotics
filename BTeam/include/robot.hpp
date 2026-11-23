@@ -15,6 +15,5 @@ extern pros::MotorGroup lift;
 
 extern pros::adi::DigitalOut openGate;
 extern pros::adi::DigitalOut flipGate;
-extern pros::Motor toggle;
 
 extern lemlib::Chassis chassis;
