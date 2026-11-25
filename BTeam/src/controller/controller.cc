@@ -21,16 +21,16 @@ void execute(const Controls &driver) {
   const bool stickInput =
       driver.leftY.past(MACRO_CANCEL_STICK) ||
       std::abs(steer) > MACRO_CANCEL_STICK;
-  const bool driverInput = stickInput || driver.liftUp.pressed() ||
-                           driver.liftDown.pressed() ||
-                           stick.liftPower != 0; // LIFT STICK: remove this
+  const bool liftInput = driver.liftUp.pressed() || driver.liftDown.pressed() ||
+                         stick.liftPower != 0; // LIFT STICK: remove this
+  const bool driverInput = stickInput || liftInput;
 
   // The toggle needs the drive, so it takes over from a turn
   if (driver.toggleMacro.newPress()) {
     Macro::cancelTurn();
   }
   const bool toggleRunning =
-      Macro::toggle(driver.toggleMacro.newPress(), driverInput);
+      Macro::toggle(driver.toggleMacro.newPress(), driverInput, liftInput);
   const bool turning =
       !toggleRunning && Macro::turn(driver.turnLeft.newPress(),
                                     driver.turnRight.newPress(), stickInput);
@@ -52,8 +52,12 @@ void execute(const Controls &driver) {
     Components::liftRaw(stick.liftPower); // LIFT STICK: remove this line
   }
 
-  // claw
-  Components::clawIntake(driver.clawIntake.pressed());
-  Components::clawOpen(driver.clawOpen.released());
+  // claw: on one shared button, a tap opens and a hold runs the intake
+  const bool shared = driver.clawIntake.id() == driver.clawOpen.id();
+  Components::clawIntake(shared ? driver.clawIntake.held()
+                                : driver.clawIntake.pressed());
+  if (shared ? driver.clawOpen.tapped() : driver.clawOpen.released()) {
+    Components::clawOpen();
+  }
 }
 } // namespace Controller

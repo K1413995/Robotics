@@ -25,12 +25,52 @@ constexpr std::uint32_t TOGGLE_BACK_TIME = 240;    // about 2 inches
 constexpr std::uint32_t TOGGLE_FORWARD_TIME = 110; // about half an inch
 // Longest wait for the lift before moving to the next step
 constexpr std::uint32_t TOGGLE_LIFT_TIMEOUT = 1200;
+// After the last toggle finishes, the lift goes back to where it was before
+// the first toggle once this much time passes with no new toggle, in ms
+constexpr std::uint32_t TOGGLE_RETURN_DELAY = 3000;
 
 enum class Step { Idle, LiftDown, DriveBack, LiftUp, LiftSettle, DriveForward };
+// None: nothing to do. Waiting: counting down. Moving: the lift is going back
+enum class Return { None, Waiting, Moving };
 
 Step step = Step::Idle;
 std::uint32_t stepStart = 0;
 bool inputCleared = false;
+
+Return returnState = Return::None;
+double returnAngle = 0;     // lift angle before the first toggle in a row
+bool haveReturnAngle = false; // false if the sensor couldn't read it
+std::uint32_t finishedAt = 0;
+
+// A toggle in quick succession keeps the angle from before the first one
+void rememberReturnAngle() {
+  const bool chained =
+      returnState == Return::Waiting ||
+      (returnState == Return::Moving && !Components::liftSettled());
+  returnState = Return::None;
+  if (chained) {
+    return;
+  }
+  const std::int32_t angle = Hardware::liftRotation.get_angle();
+  haveReturnAngle = angle != PROS_ERR;
+  returnAngle = angle / 100.0;
+}
+
+// Runs while no toggle is running. Using the lift drops the return
+void updateReturn(bool liftInput) {
+  if (returnState == Return::None) {
+    return;
+  }
+  if (liftInput) {
+    returnState = Return::None;
+  } else if (returnState == Return::Waiting &&
+             pros::millis() - finishedAt >= TOGGLE_RETURN_DELAY) {
+    Components::liftTo(returnAngle);
+    returnState = Return::Moving;
+  } else if (returnState == Return::Moving && Components::liftSettled()) {
+    returnState = Return::None;
+  }
+}
 
 void enterStep(Step next) {
   step = next;
@@ -92,6 +132,10 @@ void runStep() {
     } else {
       driveStraight(0);
       step = Step::Idle;
+      if (haveReturnAngle) {
+        returnState = Return::Waiting;
+        finishedAt = pros::millis();
+      }
     }
     break;
 
@@ -102,11 +146,13 @@ void runStep() {
 
 } // namespace
 
-bool toggle(bool pressed, bool driverInput) {
+bool toggle(bool pressed, bool driverInput, bool liftInput) {
   if (step == Step::Idle) {
     if (!pressed) {
+      updateReturn(liftInput);
       return false;
     }
+    rememberReturnAngle();
     Components::lift(0);
     Components::liftRaw(0); // a held lift stick can't fight the macro
     Components::liftTo(TOGGLE_LIFT_ANGLE);
@@ -125,6 +171,7 @@ bool toggle(bool pressed, bool driverInput) {
 }
 
 void cancelToggle() {
+  returnState = Return::None; // a canceled toggle doesn't go back
   if (step == Step::Idle) {
     return;
   }

@@ -15,6 +15,8 @@ void liftRaw(int power);
 void waitForLift(int timeoutMs = 2000);
 bool liftSettled();
 
-void clawIntake(bool);
-void clawOpen(bool);
+void startClaw();
+void clawIntake(bool in);
+void clawOpen();
+bool clawOpening();
 } // namespace Components

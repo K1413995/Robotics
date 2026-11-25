@@ -1,46 +1,58 @@
+// CLAW
+// Intake closes the claw while held. Open runs full power for a set time.
+// Otherwise the motor brakes, and the brake mode is HOLD (set in main.cc).
+// A small task times the open, so it also works in auton.
 #include "components.hpp"
+#include "pros/rtos.hpp"
 
-namespace Components {
+#include <atomic>
+#include <cstdint>
+
+namespace {
 // Claw power while the intake button is held, out of 127
 constexpr int CLAW_INTAKE_POWER = 60;
-// Power left on after intake so the ratchet keeps pulling the claw closed
-// 30 is about 2.8 volts, and 127 is the full 12 volts
-// Raise it if the claw doesn't turn, lower it if the claw motor gets hot
-constexpr int CLAW_IDLE_POWER = 30;
+// Open: full power toward open for this long, then brake
+constexpr int CLAW_OPEN_POWER = -127;
+constexpr std::uint32_t CLAW_OPEN_TIME = 2000; // milliseconds
+constexpr std::uint32_t CLAW_LOOP_MS = 10;
 
-bool idling = false;
-bool clawIsOpen = false;
-bool hasClosedPosition = false;
-double closedPosition = 0;
+// Shared between the driver or auton code and the claw task
+std::atomic<bool> intakeHeld{false};
+std::atomic<bool> openRequested{false};
+std::atomic<bool> opening{false};
 
-void clawIntake(bool in) {
-  if (in) {
-    Hardware::claw.move(CLAW_INTAKE_POWER);
-    idling = true;
-    clawIsOpen = false;
-    // Intake moved the claw, so find a new reset spot
-    hasClosedPosition = false;
-  } else if (idling) {
-    // Sent every loop until clawOpen turns it off
-    Hardware::claw.move(CLAW_IDLE_POWER);
-  }
-}
-
-// R1 switches between open and the closed reset position
-void clawOpen(bool open) {
-  if (open) {
-    idling = false;
-    if (clawIsOpen) {
-      Hardware::claw.move_absolute(closedPosition, 200);
-      clawIsOpen = false;
-    } else {
-      if (!hasClosedPosition) {
-        closedPosition = Hardware::claw.get_position();
-        hasClosedPosition = true;
-      }
-      Hardware::claw.move_absolute(closedPosition - 220, 200);
-      clawIsOpen = true;
+void runClaw() {
+  std::uint32_t openStart = 0;
+  while (true) {
+    const std::uint32_t now = pros::millis();
+    if (openRequested.exchange(false)) {
+      opening = true;
+      openStart = now;
     }
+
+    if (intakeHeld.load()) {
+      opening = false; // intake takes over from an open
+      Hardware::claw.move(CLAW_INTAKE_POWER);
+    } else if (opening.load() && now - openStart < CLAW_OPEN_TIME) {
+      Hardware::claw.move(CLAW_OPEN_POWER);
+    } else {
+      opening = false;
+      Hardware::claw.brake();
+    }
+    pros::delay(CLAW_LOOP_MS);
   }
 }
+} // namespace
+
+namespace Components {
+void startClaw() { static pros::Task clawTask(runClaw, "Claw"); }
+
+// Closes while true, brakes once false
+void clawIntake(bool in) { intakeHeld = in; }
+
+// Opens at full power for CLAW_OPEN_TIME, then brakes
+void clawOpen() { openRequested = true; }
+
+// True while the claw is still opening
+bool clawOpening() { return openRequested.load() || opening.load(); }
 } // namespace Components

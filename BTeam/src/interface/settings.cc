@@ -82,6 +82,8 @@ bool driverTookOver(const Controls &driver) {
          robotButtonPressed(driver.liftUp, driver) ||
          robotButtonPressed(driver.liftDown, driver) ||
          robotButtonPressed(driver.toggleMacro, driver) ||
+         robotButtonPressed(driver.turnLeft, driver) ||
+         robotButtonPressed(driver.turnRight, driver) ||
          robotButtonPressed(driver.clawIntake, driver) ||
          robotButtonPressed(driver.clawOpen, driver) ||
          driver.driverMode.pressed() || driver.pidMode.pressed();

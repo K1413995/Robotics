@@ -90,6 +90,7 @@ void enterMode(Mode next) {
     Macro::cancel();
     chassis.tank(0, 0, true);
     Components::lift(0);
+    Components::clawIntake(false);
     autoState = AutoState::Ready;
     wallReadFailed = false;
     startAllowedAt = pros::millis() + DOUBLE_TAP_MS;

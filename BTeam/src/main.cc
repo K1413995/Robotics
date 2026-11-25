@@ -21,6 +21,9 @@ constexpr bool TEST_MODE = true;
 // The side the COMP code runs, since it has no menu to pick one
 constexpr Settings::Side COMP_SIDE = Settings::Side::Left;
 
+// The driver's button layout, profiles are in controller/controls.hpp
+static Controls &driver = nikolai;
+
 void on_center_button() {}
 
 void initialize() {
@@ -34,22 +37,24 @@ void initialize() {
   chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
   chassis.calibrate();
   Hardware::claw.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+  Components::startClaw();
   Settings::setSide(COMP_SIDE);
   setStartPose();
 }
 
-// Driver control can end with a lift input still held, so clear it
-static void clearDriverLift() {
+// Driver control can end with a lift or intake input still held, so clear it
+static void clearDriverInput() {
   Components::lift(0);
   Components::liftRaw(0);
+  Components::clawIntake(false);
 }
 
-void disabled() { clearDriverLift(); }
+void disabled() { clearDriverInput(); }
 
 void competition_initialize() {}
 
 void autonomous() {
-  clearDriverLift();
+  clearDriverInput();
   auton();
 }
 
@@ -60,11 +65,11 @@ void opcontrol() {
   }
 
   while (true) {
-    Controls::update(john);
+    Controls::update(driver);
     if (testing) {
-      TestMode::update(john);
+      TestMode::update(driver);
     } else {
-      Controller::execute(john);
+      Controller::execute(driver);
     }
     pros::delay(20);
   }

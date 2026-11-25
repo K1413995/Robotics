@@ -5,8 +5,10 @@ namespace Macro {
 // Toggle sequence: lift to the angle, back up, raise the lift, nudge forward.
 // Call every loop. Returns true while the macro is controlling the robot.
 // driverInput cancels it, unless that input was already held when it started.
-bool toggle(bool pressed, bool driverInput);
-// Stops the toggle right away and holds the lift where it is
+// A few seconds after the last toggle in a row, the lift goes back to where it
+// was before the first one. liftInput (lift buttons or stick) skips that.
+bool toggle(bool pressed, bool driverInput, bool liftInput);
+// Stops the toggle right away, holds the lift, and skips going back
 void cancelToggle();
 
 // MOVEMENT (movement.cc)

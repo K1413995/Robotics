@@ -57,6 +57,7 @@ struct Controls {
   Button turnLeft{pros::E_CONTROLLER_DIGITAL_LEFT};
   Button turnRight{pros::E_CONTROLLER_DIGITAL_RIGHT};
 
+  // On the same button, a tap opens and a hold (150 ms) runs the intake
   Button clawIntake{pros::E_CONTROLLER_DIGITAL_R2};
   Button clawOpen{pros::E_CONTROLLER_DIGITAL_R2};
 
@@ -83,3 +84,10 @@ inline Controls john{.liftUp = Button(pros::E_CONTROLLER_DIGITAL_B),
                      .liftDown = Button(pros::E_CONTROLLER_DIGITAL_DOWN),
                      .toggleMacro = Button(pros::E_CONTROLLER_DIGITAL_L2),
                      .clawOpen = Button(pros::E_CONTROLLER_DIGITAL_R1)};
+// Like john, but the claw is all on R2 (tap opens, hold intakes)
+// and the cardinal turns are on L1 (left) and R1 (right)
+inline Controls nikolai{.liftUp = Button(pros::E_CONTROLLER_DIGITAL_B),
+                        .liftDown = Button(pros::E_CONTROLLER_DIGITAL_DOWN),
+                        .toggleMacro = Button(pros::E_CONTROLLER_DIGITAL_L2),
+                        .turnLeft = Button(pros::E_CONTROLLER_DIGITAL_L1),
+                        .turnRight = Button(pros::E_CONTROLLER_DIGITAL_R1)};
