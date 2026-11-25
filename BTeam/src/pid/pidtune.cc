@@ -37,7 +37,7 @@ namespace {
 // TEST MOVES, each one goes out and comes back
 constexpr float DRIVE_TESTS[] = {6, 12, 24, 36};   // inches
 constexpr float TURN_TESTS[] = {15, 45, 90, 180};  // degrees
-constexpr float LIFT_TESTS[] = {15, 40, 80, 120};  // degrees at the lift
+constexpr float LIFT_TESTS[] = {10, 25, 50, 80};   // degrees, fits 5 to 102
 constexpr int TEST_COUNT = 4;
 constexpr int MOVE_COUNT = TEST_COUNT * 2;
 // Keeps measuring this long after a move ends, to catch bounce

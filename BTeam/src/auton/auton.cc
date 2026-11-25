@@ -11,9 +11,11 @@
 // Jerry.io shows centimeters by default, LemLib uses inches
 constexpr float cm(float centimeters) { return centimeters / 2.54f; }
 
-// How long to wait after opening the claw before driving away, in ms.
-// The claw keeps opening for its full 2 seconds while the robot drives.
-constexpr std::uint32_t CLAW_RELEASE_WAIT = 500;
+// Lift angles for the first score, in brain-screen degrees
+constexpr double CARRY_LIFT_ANGLE = 25.5; // raised while driving to the goal
+constexpr double SCORE_LIFT_ANGLE = 18;   // lowered onto the goal
+// Longest wait for the lift to arrive, in milliseconds
+constexpr std::uint32_t LIFT_WAIT = 1000;
 
 static bool onRightSide() { return Settings::side() == Settings::Side::Right; }
 
@@ -33,6 +35,28 @@ static void moveTo(float xCm, float yCm, float heading, int timeout,
                      params);
 }
 
+// Drives to a LEFT side point in centimeters without a set ending heading
+static void pointTo(float xCm, float yCm, int timeout,
+                    lemlib::MoveToPointParams params = {}) {
+  chassis.moveToPoint(cm(xCm), sideY(cm(yCm)), timeout, params);
+}
+
+// Turns in place to a LEFT side heading, flipped for the right side
+static void turnTo(float heading, int timeout) {
+  chassis.turnToHeading(sideHeading(heading), timeout);
+}
+
+// Waits for the lift like finished() waits for the drive
+static bool liftFinished(std::uint32_t timeoutMs = LIFT_WAIT) {
+  const std::uint32_t start = pros::millis();
+  while (!Components::liftSettled() && pros::millis() - start < timeoutMs) {
+    if (!AutonRun::wait(10)) {
+      return false;
+    }
+  }
+  return !AutonRun::canceled();
+}
+
 // Reads the walls using the side picked in the controller menu
 bool setStartPose() {
   return Position::setPos(AutonConfig::START_HEADING,
@@ -50,21 +74,29 @@ static bool finished() {
 // After every move use: if (!finished()) return;
 // For pauses use: if (!AutonRun::wait(500)) return;
 void auton() {
-  // Forward and right to (120, -55) cm, ending 90 degrees right (heading 0)
+  // Forward and right to (120, -55) cm, ending 90 degrees right (heading 0),
+  // raising the lift on the way
   moveTo(120, -55, 0, 3000);
+  Components::liftTo(CARRY_LIFT_ANGLE);
   if (!finished()) {
     return;
   }
 
-  // Let go, and give the claw a moment to open before driving away
-  Components::clawOpen();
-  if (!AutonRun::wait(CLAW_RELEASE_WAIT)) {
+  // Lower onto the goal
+  Components::liftTo(SCORE_LIFT_ANGLE);
+  if (!liftFinished()) {
     return;
   }
 
-  // Back near the start at (150, -150) cm, turned around to face our wall
-  // (heading 90) for the match load
-  moveTo(150, -150, 90, 3000);
+  // Let go and drive off right away, the claw keeps opening on its own.
+  // Backs straight to (150, -150) cm near the start...
+  Components::clawOpen();
+  pointTo(150, -150, 3000, {.forwards = false});
+  if (!finished()) {
+    return;
+  }
+  // ...then turns to face our wall (heading 90) for the match load
+  turnTo(90, 1500);
   if (!finished()) {
     return;
   }
