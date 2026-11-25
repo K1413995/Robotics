@@ -9,7 +9,9 @@ constexpr int SYSTEM_COUNT = 3;
 constexpr int TERM_COUNT = 3;
 constexpr int DIGIT_COUNT = 5;    // 000.00
 constexpr int RESET_ROW = 3;      // the row below kP, kI, kD
-constexpr int GRAPH_POINTS = 150; // 3 seconds at one point every 20 ms
+// The whole test goes on one graph. When it fills up, every other point is
+// dropped so the rest of the test still fits
+constexpr int GRAPH_POINTS = 230; // 2 pixels each across the graph
 
 enum System { SYS_DRIVE, SYS_TURN, SYS_LIFT };
 inline constexpr const char *SYSTEM_NAMES[SYSTEM_COUNT] = {"DRIVE", "TURN",
@@ -58,10 +60,12 @@ struct View {
   std::atomic<float> worstError{0};
   std::atomic<float> worstSettle{0};
 
-  std::atomic<int> graphEpoch{0}; // changes when a new move starts
+  // Changes when the graph starts over or gets squeezed, so it redraws
+  std::atomic<int> graphEpoch{0};
   std::atomic<int> graphCount{0};
-  std::atomic<float> graphTarget{0}; // real distance this move has to travel
-  float graph[GRAPH_POINTS] = {};    // distance traveled toward the target
+  std::atomic<float> graphMax{0};  // the biggest target in this test
+  float graph[GRAPH_POINTS] = {};  // distance from the start of the test
+  float targets[GRAPH_POINTS] = {}; // where each move was headed
 };
 
 View &view();

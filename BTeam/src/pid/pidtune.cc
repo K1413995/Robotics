@@ -35,11 +35,9 @@ View &view() {
 namespace {
 
 // TEST MOVES, each one goes out and comes back
-constexpr float DRIVE_TESTS[] = {6, 12, 24, 36};   // inches
+constexpr float DRIVE_TESTS[] = {6, 18, 36};       // inches
 constexpr float TURN_TESTS[] = {15, 45, 90, 180};  // degrees
 constexpr float LIFT_TESTS[] = {10, 25, 50, 80};   // degrees, fits 5 to 102
-constexpr int TEST_COUNT = 4;
-constexpr int MOVE_COUNT = TEST_COUNT * 2;
 // Keeps measuring this long after a move ends, to catch bounce
 constexpr std::uint32_t SETTLE_PAUSE = 350;
 // Lift tests stay this many degrees away from the limits
@@ -47,8 +45,11 @@ constexpr float LIFT_ROOM_MARGIN = 3;
 // Longest wait for the drive to stop before changing its PID, in milliseconds
 constexpr std::uint32_t DRIVE_STOP_WAIT = 200;
 
+template <int N> constexpr int countOf(const float (&)[N]) { return N; }
+
 struct TestSettings {
   const float *sizes;
+  int count;            // how many sizes, each one is a move out and back
   int timeout;          // longest each move can take, in milliseconds
   float tolerance;      // counts as settled once it stays this close
   float overshootLimit; // when the hint suggests a change
@@ -56,9 +57,9 @@ struct TestSettings {
 };
 
 constexpr TestSettings TESTS[SYSTEM_COUNT] = {
-    {DRIVE_TESTS, 3000, 1, 1, 2.0f}, // inches
-    {TURN_TESTS, 2000, 1, 2, 1.3f},  // degrees
-    {LIFT_TESTS, 2500, 2, 3, 1.5f},  // degrees
+    {DRIVE_TESTS, countOf(DRIVE_TESTS), 3000, 1, 1, 2.0f}, // inches
+    {TURN_TESTS, countOf(TURN_TESTS), 2000, 1, 2, 1.3f},   // degrees
+    {LIFT_TESTS, countOf(LIFT_TESTS), 2500, 2, 3, 1.5f},   // degrees
 };
 
 // CONTROLS
@@ -100,6 +101,13 @@ std::uint32_t settleStart = 0;
 float liftBase = 0; // height the lift test starts and returns to
 float liftSign = 1; // the lift test moves toward whichever limit is farther
 float liftRoom = 0;
+
+// Whole-test graph
+float graphGoal = 0;    // where the current move is headed, from the start
+float turnTotal = 0;    // turn tests count the heading past 360
+float turnLastRaw = 0;
+int sampleStep = 1;     // records one point every this many loops
+int sampleTick = 0;
 
 int toHundredths(float value) {
   return std::clamp(static_cast<int>(std::lround(value * 100)), 0, MAX_GAIN);
@@ -241,9 +249,7 @@ void startMove() {
 
   v.moveNumber = moveIndex + 1;
   v.moveSize = moveSize;
-  v.graphTarget = moveNeeded;
-  v.graphCount = 0;
-  v.graphEpoch.fetch_add(1);
+  graphGoal = outward ? moveSize : 0.0f;
   runStep = RunStep::Moving;
 
   if (lift) {
@@ -287,9 +293,26 @@ void startRun() {
     chassis.setPose(0, 0, 0);
   }
 
+  // A fresh graph scaled to the biggest move
+  const TestSettings &test = TESTS[system];
+  float biggest = 0;
+  for (int i = 0; i < test.count; i++) {
+    biggest = std::max(biggest, test.sizes[i]);
+  }
+  if (system == SYS_LIFT) {
+    biggest = std::min(biggest, liftRoom);
+  }
+  turnTotal = 0;
+  turnLastRaw = readPosition();
+  sampleStep = 1;
+  sampleTick = 0;
+  v.graphMax = biggest;
+  v.graphCount = 0;
+  v.graphEpoch.fetch_add(1);
+
   moveIndex = 0;
   v.testSystem = system;
-  v.moveCount = MOVE_COUNT;
+  v.moveCount = test.count * 2;
   v.phase = PHASE_RUNNING;
   v.hint = HINT_NONE;
   v.overshoot = 0;
@@ -310,6 +333,43 @@ void stopRun(Phase phase) {
   view().phase = phase;
 }
 
+// Where the robot is from the start of the test, in the direction tests go out
+float graphPosition(float raw) {
+  if (runSystem == SYS_TURN) {
+    turnTotal += wrap180(raw - turnLastRaw);
+    turnLastRaw = raw;
+    return turnTotal;
+  }
+  if (runSystem == SYS_LIFT) {
+    return (raw - liftBase) * liftSign;
+  }
+  return raw; // drive tests start at 0
+}
+
+void recordGraph(float position) {
+  View &v = view();
+  if (++sampleTick < sampleStep) {
+    return;
+  }
+  sampleTick = 0;
+  int count = v.graphCount.load();
+  if (count >= GRAPH_POINTS) {
+    // Full: keep every other point and record half as often from now on
+    const int half = GRAPH_POINTS / 2;
+    for (int i = 0; i < half; i++) {
+      v.graph[i] = v.graph[i * 2];
+      v.targets[i] = v.targets[i * 2];
+    }
+    count = half;
+    sampleStep *= 2;
+    v.graphCount = count; // set before the epoch so the screen redraws right
+    v.graphEpoch.fetch_add(1);
+  }
+  v.graph[count] = position;
+  v.targets[count] = graphGoal;
+  v.graphCount = count + 1;
+}
+
 void sampleMove() {
   View &v = view();
   const float raw = readPosition();
@@ -322,6 +382,7 @@ void sampleMove() {
       runSystem == SYS_TURN ? wrap180(raw - lastRaw) : raw - lastRaw;
   lastRaw = raw;
   traveled += change;
+  recordGraph(graphPosition(raw));
 
   const float progress = traveled * moveDirection;
   const float error = moveNeeded - progress;
@@ -329,12 +390,6 @@ void sampleMove() {
   moveError = std::fabs(error);
   if (moveError > TESTS[runSystem].tolerance) {
     moveSettle = (pros::millis() - moveStart) / 1000.0f;
-  }
-
-  const int count = v.graphCount.load();
-  if (count < GRAPH_POINTS) {
-    v.graph[count] = progress;
-    v.graphCount = count + 1;
   }
   v.overshoot = moveOvershoot;
   v.finalError = moveError;
@@ -363,7 +418,7 @@ void finishMove() {
   v.worstSettle = std::max(v.worstSettle.load(), moveSettle);
 
   moveIndex++;
-  if (moveIndex < MOVE_COUNT) {
+  if (moveIndex < TESTS[runSystem].count * 2) {
     startMove();
     return;
   }

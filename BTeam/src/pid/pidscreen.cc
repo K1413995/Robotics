@@ -445,24 +445,27 @@ void drawMetrics(const View &v) {
   setSeconds(worstText[2], shownWorst[2], v.worstSettle.load(), "worst ");
 }
 
-// Blue is where the robot went, yellow is the target
+// The whole test on one graph: blue is where the robot went, yellow steps to
+// each move's target. Values are drawn in tenths
 void drawGraph(const View &v) {
   const int epoch = v.graphEpoch.load();
+  const int count = std::min(v.graphCount.load(), GRAPH_POINTS);
   bool changed = false;
-  if (epoch != shownEpoch) {
+  if (epoch != shownEpoch || count < drawnPoints) {
     shownEpoch = epoch;
     drawnPoints = 0;
-    const int target = static_cast<int>(std::lround(v.graphTarget.load() * 10));
-    const int margin = std::max(target / 4, 5);
-    lv_chart_set_range(graph, LV_CHART_AXIS_PRIMARY_Y, -margin,
-                       target + margin);
-    lv_chart_set_all_value(graph, targetLine, target);
+    const int top = static_cast<int>(std::lround(v.graphMax.load() * 10));
+    const int margin = std::max(top / 4, 5);
+    lv_chart_set_range(graph, LV_CHART_AXIS_PRIMARY_Y, -margin, top + margin);
+    lv_chart_set_all_value(graph, targetLine, LV_CHART_POINT_NONE);
     lv_chart_set_all_value(graph, actualLine, LV_CHART_POINT_NONE);
     changed = true;
   }
 
-  const int count = std::min(v.graphCount.load(), GRAPH_POINTS);
   for (; drawnPoints < count; drawnPoints++) {
+    lv_chart_set_value_by_id(
+        graph, targetLine, drawnPoints,
+        static_cast<int>(std::lround(v.targets[drawnPoints] * 10)));
     lv_chart_set_value_by_id(
         graph, actualLine, drawnPoints,
         static_cast<int>(std::lround(v.graph[drawnPoints] * 10)));
