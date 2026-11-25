@@ -76,7 +76,7 @@ static bool finished() {
 void auton() {
   // Forward and right to (120, -55) cm, ending 90 degrees right (heading 0),
   // raising the lift on the way
-  moveTo(120, -55, 0, 3000);
+  moveTo(115, -45, 0, 3000);
   Components::liftTo(CARRY_LIFT_ANGLE);
   if (!finished()) {
     return;
@@ -91,7 +91,7 @@ void auton() {
   // Let go and drive off right away, the claw keeps opening on its own.
   // Backs straight to (150, -150) cm near the start...
   Components::clawOpen();
-  pointTo(150, -150, 3000, {.forwards = false});
+  pointTo(145, -148, 3000, {.forwards = false});
   if (!finished()) {
     return;
   }
