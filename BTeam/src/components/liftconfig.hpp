@@ -8,7 +8,7 @@
 namespace LiftConfig {
 
 // LIMITS, in degrees, using the angle shown on the brain screen
-constexpr double MIN_ANGLE = 5;
+constexpr double MIN_ANGLE = 7; // also the intake height
 constexpr double MAX_ANGLE = 102;
 // Use -1 if the angle drops as the lift rises
 constexpr int ANGLE_DIRECTION = 1;

@@ -41,6 +41,13 @@ void driveStraight(float distanceCm, int timeout,
 bool finished();
 // Waits for the lift to reach its target
 bool liftFinished(std::uint32_t timeoutMs = 1000);
+// Waits until the lift is within toleranceDeg of an angle. Quicker than
+// liftFinished, which also waits for the PID's slow last degree or two
+bool liftNear(double angle, double toleranceDeg = 2,
+              std::uint32_t timeoutMs = 1000);
+// Waits until the robot is within rangeCm of a point, or the move ends.
+// Lets the next step start while the move is still finishing
+bool waitUntilNear(float xCm, float yCm, float rangeCm);
 // A plain pause
 bool wait(std::uint32_t ms);
 // Drives forward at a steady power, like pushing into the wall, then stops

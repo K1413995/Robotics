@@ -1,6 +1,7 @@
 // LIFT STICK
 // The right stick's vertical axis drives the lift motors directly.
-// No ramp, curve, or slowing, so the driver sets the speed.
+// No ramp or curve, so the driver sets the speed. The only slowing is near
+// the bottom on the way down, done in components/lift.cc
 // Steering is on the same stick, so each axis is protected from the other.
 #include "liftstick.hpp"
 

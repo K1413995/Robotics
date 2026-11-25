@@ -1,12 +1,14 @@
 // LIFT
 // Picks who controls the lift each loop:
 //   Driver holding a button -> LiftDriver smoothing (controller/liftdriver.cc)
-//   Macro or stick power    -> straight to the motors
+//   Macro or stick power    -> straight to the motors, but going down it
+//                              slows for the bottom like the buttons
 //   Button just released    -> LiftDriver fades the speed out
 //   Everything else         -> LiftPid goes to or holds a target (pid/liftpid.cc)
 // Driver tuning is in liftconfig.hpp, PID tuning is in pid/pidconfig.hpp
 // Lift brake mode is HOLD, set in main.cc initialize()
 #include "../controller/liftdriver.hpp"
+#include "../hardware/hardware.hpp"
 #include "../pid/liftpid.hpp"
 #include "components.hpp"
 #include "liftconfig.hpp"
@@ -26,8 +28,43 @@ static std::atomic<int> requestedHeight{NO_REQUEST}; // tenths of a degree
 static std::atomic<int> rawPower{0};                 // set by macros
 static std::atomic<bool> liftDone{true};
 
-// Only the lift task uses this
+// Only the lift task uses these
 static bool handMoving = false; // the driver or a macro moved it last loop
+static bool rawSlowing = false; // raw power going down hit the bottom slowing
+
+// Lift speed in degrees per second, positive is up
+static double measuredSpeed() {
+  return Hardware::liftMotors.get_actual_velocity() * LiftConfig::GEAR_RATIO *
+         6;
+}
+
+// Raw power (the lift stick) going down slows for the bottom like the buttons.
+// Far from the bottom it stays raw. Once the slowing starts it keeps the speed
+// in control until the stick is let go, so gravity can't speed it back up
+static void runRaw(int raw, double height) {
+  const bool goingUp = raw > 0;
+  const double room = LiftCore::roomToLimit(goingUp, height);
+  if (room <= 0) {
+    rawSlowing = false;
+    LiftCore::setPower(0);
+    return;
+  }
+  if (goingUp) {
+    rawSlowing = false;
+    LiftCore::setPower(raw);
+    return;
+  }
+  const double asked = -raw / 127.0 * LiftConfig::FULL_SPEED;
+  const double limit = LiftDriver::stoppingSpeed(false, room);
+  if (asked > limit || -measuredSpeed() > limit) {
+    rawSlowing = true;
+  }
+  if (rawSlowing) {
+    LiftCore::setSpeed(-std::min(asked, limit));
+  } else {
+    LiftCore::setPower(raw);
+  }
+}
 
 static void stepLift() {
   const std::int32_t angle = Hardware::liftRotation.get_angle();
@@ -64,9 +101,10 @@ static void stepLift() {
     LiftDriver::reset();
     handMoving = true; // hold wherever it stops once raw power ends
     liftDone = false;
-    LiftCore::setPower(LiftCore::roomToLimit(raw > 0, height) > 0 ? raw : 0);
+    runRaw(raw, height);
     return;
   }
+  rawSlowing = false;
 
   if (handMoving) {
     handMoving = false;

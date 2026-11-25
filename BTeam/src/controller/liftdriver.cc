@@ -43,7 +43,15 @@ double heldSpeed(double heldMs, double topSpeed) {
          (topSpeed - tapTop) * smoothStep((heldMs - TAP_TIME) / ACCEL_TIME);
 }
 
-// Fastest the lift can go and still stop smoothly in the room left
+// Moves the commanded speed toward the target without jumping
+void sendSpeed(double target, double maxChangePerSecond) {
+  const double current = LiftCore::commandedSpeed();
+  const double maxChange = maxChangePerSecond * LOOP_MS / 1000.0;
+  LiftCore::setSpeed(current + std::clamp(target - current, -maxChange, maxChange));
+}
+
+} // namespace
+
 double stoppingSpeed(bool goingUp, double room) {
   const double decel = goingUp ? TOP_DECEL : BOTTOM_DECEL;
   const double ease = goingUp ? TOP_EASE : BOTTOM_EASE;
@@ -58,15 +66,6 @@ double stoppingSpeed(bool goingUp, double room) {
                            : std::sqrt(2 * decel * (usableRoom - easeRoom / 2));
   return LANDING_SPEED + curve;
 }
-
-// Moves the commanded speed toward the target without jumping
-void sendSpeed(double target, double maxChangePerSecond) {
-  const double current = LiftCore::commandedSpeed();
-  const double maxChange = maxChangePerSecond * LOOP_MS / 1000.0;
-  LiftCore::setSpeed(current + std::clamp(target - current, -maxChange, maxChange));
-}
-
-} // namespace
 
 void run(int power, double height) {
   const std::uint32_t now = pros::millis();
