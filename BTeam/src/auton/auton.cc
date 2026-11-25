@@ -1,103 +1,134 @@
+// AUTONS
+// Write points for the LEFT side, in centimeters (Jerry.io). They flip for the
+// right side on their own. Moves and waits are in autonhelpers.hpp
+// After every move use: if (!finished()) return;
 #include "auton.hpp"
-#include "../components/components.hpp"
-#include "../hardware/hardware.hpp"
-#include "../interface/settings.hpp"
-#include "autonrun.hpp"
+#include "../components/liftconfig.hpp"
+#include "autonconfig.hpp"
+#include "autonhelpers.hpp"
 #include "position.hpp"
 
-#include <cmath>
 #include <cstdint>
 
-// Jerry.io shows centimeters by default, LemLib uses inches
-constexpr float cm(float centimeters) { return centimeters / 2.54f; }
+namespace Auton {
+namespace {
 
-// Lift angles for the first score, in brain-screen degrees
-constexpr double CARRY_LIFT_ANGLE = 25.5; // raised while driving to the goal
-constexpr double SCORE_LIFT_ANGLE = 18;   // lowered onto the goal
-// Longest wait for the lift to arrive, in milliseconds
-constexpr std::uint32_t LIFT_WAIT = 1000;
+// MATCH AUTON SETTINGS
+// Points, in cm
+constexpr float GOAL_X = 115; // in front of the goal, facing heading 0
+constexpr float GOAL_Y = -45;
+constexpr float LOAD_ROW_Y = -148; // the row in line with the match load
+constexpr float LOAD_X = 145;      // at the match load, facing our wall
+// Drives straight this far before the first turn so it clears the match load
+// it starts touching, in cm
+constexpr float START_CLEAR = 15;
 
-static bool onRightSide() { return Settings::side() == Settings::Side::Right; }
+// Lift angles, in brain-screen degrees
+constexpr double FIRST_CARRY = 25.5; // raised while driving to the goal
+constexpr double FIRST_SCORE = 18;   // lowered onto the goal
+// GUESSES for the second stack, which sits on top of the first
+constexpr double SECOND_CARRY = 40;
+constexpr double SECOND_SCORE = 32.5;
+constexpr double LOAD_LIFT = LiftConfig::MIN_ANGLE; // all the way down
 
-// Write auton points for the LEFT side, the right side mirrors them.
-// Mirroring flips left/right (Y) only. X, toward the enemy, stays the same.
-static float sideY(float y) { return onRightSide() ? -y : y; }
-// Turns a left side heading into the mirrored one: 0 and 180 swap,
-// 90 (our wall) and 270 (the enemy) stay the same
-static float sideHeading(float heading) {
-  return onRightSide() ? std::fmod(540.0f - heading, 360.0f) : heading;
-}
+// Match load
+constexpr int LOAD_PUSH_POWER = 25; // keeps it pressed on the wall, out of 127
+constexpr std::uint32_t LOAD_TIME = 1500; // milliseconds intaking
 
-// Moves to a LEFT side point in centimeters, flipped for the right side
-static void moveTo(float xCm, float yCm, float heading, int timeout,
-                   lemlib::MoveToPoseParams params = {}) {
-  chassis.moveToPose(cm(xCm), sideY(cm(yCm)), sideHeading(heading), timeout,
-                     params);
-}
-
-// Drives to a LEFT side point in centimeters without a set ending heading
-static void pointTo(float xCm, float yCm, int timeout,
-                    lemlib::MoveToPointParams params = {}) {
-  chassis.moveToPoint(cm(xCm), sideY(cm(yCm)), timeout, params);
-}
-
-// Turns in place to a LEFT side heading, flipped for the right side
-static void turnTo(float heading, int timeout) {
-  chassis.turnToHeading(sideHeading(heading), timeout);
-}
-
-// Waits for the lift like finished() waits for the drive
-static bool liftFinished(std::uint32_t timeoutMs = LIFT_WAIT) {
-  const std::uint32_t start = pros::millis();
-  while (!Components::liftSettled() && pros::millis() - start < timeoutMs) {
-    if (!AutonRun::wait(10)) {
-      return false;
-    }
-  }
-  return !AutonRun::canceled();
-}
-
-// Reads the walls using the side picked in the controller menu
-bool setStartPose() {
-  return Position::setPos(AutonConfig::START_HEADING,
-                          onRightSide() ? "right" : "left");
-}
-
-// Waits for the current move. False means the test code canceled the auton
-static bool finished() {
-  chassis.waitUntilDone();
-  return !AutonRun::canceled();
-}
-
-// All points are LEFT side field coordinates in cm, see the plane in auton.hpp
-// Use moveTo for every move so the right side flips automatically
-// After every move use: if (!finished()) return;
-// For pauses use: if (!AutonRun::wait(500)) return;
-void auton() {
-  // Forward and right to (120, -55) cm, ending 90 degrees right (heading 0),
-  // raising the lift on the way
-  moveTo(115, -45, 0, 3000);
-  Components::liftTo(CARRY_LIFT_ANGLE);
-  if (!finished()) {
-    return;
-  }
-
-  // Lower onto the goal
-  Components::liftTo(SCORE_LIFT_ANGLE);
+// Lowers onto the goal, lets go, and backs straight out to the load row
+// without waiting for the claw to finish opening
+bool scoreAndBackOff(double scoreAngle) {
+  Components::liftTo(scoreAngle);
   if (!liftFinished()) {
-    return;
+    return false;
   }
-
-  // Let go and drive off right away, the claw keeps opening on its own.
-  // Backs straight to (150, -150) cm near the start...
   Components::clawOpen();
-  pointTo(145, -148, 3000, {.forwards = false});
-  if (!finished()) {
-    return;
-  }
-  // ...then turns to face our wall (heading 90) for the match load
+  pointTo(GOAL_X, LOAD_ROW_Y, 3000, {.forwards = false});
+  return finished();
+}
+
+// From the load row: turn to the wall, drive up, and intake with the lift
+// all the way down, pushing so it stays against the wall
+bool loadFromWall() {
+  Components::liftTo(LOAD_LIFT);
   turnTo(90, 1500);
   if (!finished()) {
+    return false;
+  }
+  pointTo(LOAD_X, LOAD_ROW_Y, 2000);
+  if (!finished() || !liftFinished()) {
+    return false;
+  }
+  Components::clawIntake(true);
+  const bool loaded = pushForward(LOAD_PUSH_POWER, LOAD_TIME);
+  Components::clawIntake(false); // brakes, HOLD keeps the claw closed
+  return loaded;
+}
+
+// The reverse of the trip out: back to the row, turn, raise, drive to the goal
+bool carryToGoal(double carryAngle) {
+  pointTo(GOAL_X, LOAD_ROW_Y, 2000, {.forwards = false});
+  if (!finished()) {
+    return false;
+  }
+  turnTo(0, 1500);
+  if (!finished()) {
+    return false;
+  }
+  pointTo(GOAL_X, GOAL_Y, 3000);
+  Components::liftTo(carryAngle);
+  return finished();
+}
+
+} // namespace
+
+void match(Settings::Side side) {
+  begin(side);
+
+  // Straight out first so turning doesn't clip the match load
+  driveStraight(START_CLEAR, 1000);
+  if (!finished()) {
+    return;
+  }
+
+  // To the goal, ending 90 degrees right (heading 0), raising the lift
+  moveTo(GOAL_X, GOAL_Y, 0, 3000);
+  Components::liftTo(FIRST_CARRY);
+  if (!finished()) {
+    return;
+  }
+  if (!scoreAndBackOff(FIRST_SCORE)) {
+    return;
+  }
+
+  // Second stack from the match load
+  if (!loadFromWall()) {
+    return;
+  }
+  if (!carryToGoal(SECOND_CARRY)) {
+    return;
+  }
+  if (!scoreAndBackOff(SECOND_SCORE)) {
     return;
   }
 }
+
+void skills(Settings::Side side) {
+  begin(side);
+  // TODO: skills route
+}
+
+void run(Settings::Routine routine, Settings::Side side) {
+  if (routine == Settings::Routine::Skills) {
+    skills(side);
+  } else {
+    match(side);
+  }
+}
+
+bool setStartPose(Settings::Side side) {
+  return Position::setPos(AutonConfig::START_HEADING,
+                          side == Settings::Side::Right ? "right" : "left");
+}
+
+} // namespace Auton

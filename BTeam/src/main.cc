@@ -18,7 +18,8 @@
 // Plugged into a field or competition switch, the test code also acts like comp
 constexpr bool TEST_MODE = true;
 
-// The side the COMP code runs, since it has no menu to pick one
+// The auton and side the COMP code runs, since it has no menu to pick them
+constexpr Settings::Routine COMP_ROUTINE = Settings::Routine::Match;
 constexpr Settings::Side COMP_SIDE = Settings::Side::Left;
 
 // The driver's button layout, profiles are in controller/controls.hpp
@@ -38,8 +39,9 @@ void initialize() {
   chassis.calibrate();
   Hardware::claw.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
   Components::startClaw();
+  Settings::setRoutine(COMP_ROUTINE);
   Settings::setSide(COMP_SIDE);
-  setStartPose();
+  Auton::setStartPose(Settings::side());
 }
 
 // Driver control can end with a lift or intake input still held, so clear it
@@ -55,7 +57,7 @@ void competition_initialize() {}
 
 void autonomous() {
   clearDriverInput();
-  auton();
+  Auton::run(Settings::routine(), Settings::side());
 }
 
 void opcontrol() {

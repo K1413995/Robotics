@@ -27,7 +27,7 @@ constexpr std::uint32_t TOGGLE_FORWARD_TIME = 110; // about half an inch
 constexpr std::uint32_t TOGGLE_LIFT_TIMEOUT = 1200;
 // After the last toggle finishes, the lift goes back to where it was before
 // the first toggle once this much time passes with no new toggle, in ms
-constexpr std::uint32_t TOGGLE_RETURN_DELAY = 3000;
+constexpr std::uint32_t TOGGLE_RETURN_DELAY = 1000;
 
 enum class Step { Idle, LiftDown, DriveBack, LiftUp, LiftSettle, DriveForward };
 // None: nothing to do. Waiting: counting down. Moving: the lift is going back

@@ -74,6 +74,7 @@ void haltRobot() {
   Macro::cancel();
   chassis.cancelAllMotions();
   chassis.tank(0, 0, true);
+  Components::clawIntake(false); // a canceled auton could leave it on
   Components::lift(0);
   Components::liftBy(0); // hold wherever the lift is now
 }
@@ -154,6 +155,12 @@ void updateAuto(const Controls &driver) {
   } else if (driver.menuRight.newPress()) {
     pickSide(Settings::Side::Right);
   }
+  // Up and down switch between the match and skills autons
+  if (driver.menuUp.newPress() || driver.menuDown.newPress()) {
+    Settings::setRoutine(Settings::routine() == Settings::Routine::Match
+                             ? Settings::Routine::Skills
+                             : Settings::Routine::Match);
+  }
   if (driver.autoMode.newPress() &&
       static_cast<std::int32_t>(pros::millis() - startAllowedAt) >= 0) {
     startAuton();
@@ -163,8 +170,9 @@ void updateAuto(const Controls &driver) {
 void drawAuto() {
   const bool running = autoState == AutoState::Running;
   char line[32];
-  std::snprintf(line, sizeof(line), running ? "AUTO %s" : "AUTO <%s>",
-                sideName());
+  // Like "A:MATCH LEFT", the A: marks auto mode
+  std::snprintf(line, sizeof(line), "A:%s %s",
+                Settings::routineName(Settings::routine()), sideName());
   CtrlScreen::write(0, line);
 
   const char *state = "READY";
@@ -189,7 +197,7 @@ void drawAuto() {
   } else if (wallReadFailed) {
     CtrlScreen::write(2, "BAD POS A=run");
   } else {
-    CtrlScreen::write(2, "A run  <> side");
+    CtrlScreen::write(2, "A run ^v <>");
   }
 }
 

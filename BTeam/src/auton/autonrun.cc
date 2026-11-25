@@ -26,9 +26,12 @@ void start() {
   const std::uint32_t now = pros::millis();
   startedAt = now;
   endedAt = now;
+  // The menu can't change the auton or side partway through a run
+  const Settings::Routine routine = Settings::routine();
+  const Settings::Side side = Settings::side();
   pros::Task task(
-      [] {
-        auton();
+      [routine, side] {
+        Auton::run(routine, side);
         endedAt = pros::millis();
         // Cleared here so a real match auton can never start out canceled
         stopRequested = false;

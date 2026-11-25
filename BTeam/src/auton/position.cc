@@ -4,7 +4,7 @@
 #include "position.hpp"
 #include "../components/components.hpp"
 #include "../hardware/hardware.hpp"
-#include "auton.hpp"
+#include "autonconfig.hpp"
 
 #include <algorithm>
 #include <array>
