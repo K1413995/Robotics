@@ -20,10 +20,10 @@ struct Motion {
 };
 
 // Forward and back (NEED TO UNDERSTAND)
-constexpr Motion DRIVE{10, 0, 3, 3, 1, 100, 3, 500, 20};
+constexpr Motion DRIVE{6.5, 0, 6, 3, 1, 100, 3, 500, 20};
 
 // Turning (NEED TO UNDERSTAND)
-constexpr Motion TURN{2, 0, 10, 3, 1, 100, 3, 500, 0};
+constexpr Motion TURN{1.5, 0.05, 10, 3, 1, 100, 3, 500, 0};
 
 // Lift, used by liftTo and liftBy, and to hold position
 namespace Lift {
