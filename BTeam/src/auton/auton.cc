@@ -84,9 +84,16 @@ void match(Settings::Side side) {
   Components::liftTo(32.5);
   if (!finished() || !liftNear(32.5, 2)) return;
 
-  // Let go and back straight out
+  // Let go and back straight out to the row, lift down for the next load
   Components::clawOpen();
   straightToY(-150, 2500, REACH_BACK);
+  Components::liftTo(LIFT_BOTTOM);
+  if (!finished()) return;
+
+  // Back to the match load, the same square way as the first trip
+  turnTo(90, 1500);
+  if (!finished()) return;
+  pointTo(160, -150, 2000, REACH);
   finished();
 }
 
