@@ -96,6 +96,16 @@ bool waitUntilNear(float xCm, float yCm, float rangeCm) {
 
 bool wait(std::uint32_t ms) { return AutonRun::wait(ms); }
 
+void after(std::uint32_t ms, std::function<void()> action) {
+  pros::Task task(
+      [ms, action] {
+        if (AutonRun::wait(ms)) {
+          action();
+        }
+      },
+      "Auton After");
+}
+
 bool pushForward(int power, std::uint32_t ms) {
   chassis.tank(power, power, true);
   const bool ok = AutonRun::wait(ms);

@@ -4,6 +4,7 @@
 #include "../interface/settings.hpp"
 
 #include <cstdint>
+#include <functional>
 
 // AUTON HELPERS
 // Points are LEFT side field coordinates in centimeters (Jerry.io), and flip
@@ -52,5 +53,9 @@ bool waitUntilNear(float xCm, float yCm, float rangeCm);
 bool wait(std::uint32_t ms);
 // Drives forward at a steady power, like pushing into the wall, then stops
 bool pushForward(int power, std::uint32_t ms);
+
+// Runs an action ms from now on its own, while the moves carry on.
+// Skipped if the test code cancels the auton first
+void after(std::uint32_t ms, std::function<void()> action);
 
 } // namespace Auton
