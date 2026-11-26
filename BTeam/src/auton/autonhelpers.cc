@@ -46,6 +46,18 @@ void driveStraight(float distanceCm, int timeout,
                       pose.y + distance * std::cos(radians), timeout, params);
 }
 
+void straightToY(float yCm, int timeout, lemlib::MoveToPointParams params) {
+  const lemlib::Pose pose = chassis.getPose();
+  // How much Y changes for each inch driven forward
+  const float yPerInch =
+      std::cos(pose.theta * static_cast<float>(M_PI) / 180.0f);
+  if (std::fabs(yPerInch) < 0.1f) {
+    return; // nearly sideways to the line, it would never get there
+  }
+  const float distanceIn = (sideY(cm(yCm)) - pose.y) / yPerInch;
+  driveStraight(distanceIn * 2.54f, timeout, params);
+}
+
 bool finished() {
   chassis.waitUntilDone();
   return !AutonRun::canceled();

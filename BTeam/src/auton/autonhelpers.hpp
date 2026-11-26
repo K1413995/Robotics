@@ -36,6 +36,11 @@ void turnTo(float heading, int timeout,
 // Straight along the way the robot faces now: + forward, - backward, in cm
 void driveStraight(float distanceCm, int timeout,
                    lemlib::MoveToPointParams params = {});
+// Straight along the way the robot faces now, forward or backward, until it
+// reaches a Y line. It never steers onto another line like pointTo does.
+// Does nothing if the robot faces along the line (heading 90 or 270)
+void straightToY(float yCm, int timeout,
+                 lemlib::MoveToPointParams params = {});
 
 // WAITING, each returns false if the test code canceled the auton
 // Waits for the current move to end

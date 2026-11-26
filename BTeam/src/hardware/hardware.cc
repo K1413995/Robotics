@@ -29,7 +29,7 @@ pros::Distance leftDistance(Ports::LEFT_DISTANCE);
 pros::Distance rightDistance(Ports::RIGHT_DISTANCE);
 pros::Distance backDistance(Ports::BACK_DISTANCE);
 
-lemlib::TrackingWheel vertical(&verticalSensor, lemlib::Omniwheel::NEW_275, 0);
+lemlib::TrackingWheel vertical(&verticalSensor, lemlib::Omniwheel::NEW_2, 0);
 
 // Controller config
 // input curve for throttle input during driver control
