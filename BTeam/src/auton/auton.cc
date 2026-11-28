@@ -20,6 +20,10 @@ constexpr lemlib::MoveToPointParams REACH{.minSpeed = 20};
 constexpr lemlib::MoveToPointParams REACH_BACK{.forwards = false,
                                                .minSpeed = 20};
 
+// How long the claw gets to open before backing away from a goal, in ms.
+// It takes about 500 ms to open all the way
+constexpr std::uint32_t CLAW_RELEASE = 300;
+
 // The lift's lowest angle, also the intake height
 constexpr double LIFT_BOTTOM = LiftConfig::MIN_ANGLE;
 
@@ -46,8 +50,11 @@ void match(Settings::Side side) {
   Components::liftTo(18);
   if (!finished() || !liftNear(18, 2)) return;
 
-  // Let go and back straight out to the row, without waiting for the claw
+  // Let go, give the claw a moment to open, then back straight out to the row.
+  // Backing out right away drags the pin off the goal (seen in a video).
+  // Raise CLAW_RELEASE if it still drags, lower it to save time
   Components::clawOpen();
+  if (!wait(CLAW_RELEASE)) return;
   straightToY(-150, 2500, REACH_BACK);
   if (!finished()) return;
 
@@ -65,9 +72,11 @@ void match(Settings::Side side) {
   Components::clawIntake(true);
   if (!pushForward(25, 1500)) return;
 
-  // Back out along the row. The intake keeps pulling for 1.5 s on its own,
-  // and the lift rises 5 degrees 0.5 s in, once it's clear of the load
-  pointTo(120, -150, 2000, REACH_BACK);
+  // Back straight out 40 cm (to about x 120). Straight, not to a point: if the
+  // load twisted the robot, backing to a point swings it around on the way.
+  // The intake keeps pulling for 1.5 s on its own, and the lift rises
+  // 5 degrees 0.5 s in, once it's clear of the load
+  driveStraight(-40, 2000, REACH);
   after(1500, [] { Components::clawIntake(false); });
   if (!wait(500)) return;
   Components::liftTo(LIFT_BOTTOM + 5);
@@ -86,6 +95,7 @@ void match(Settings::Side side) {
 
   // Let go and back straight out to the row, lift down for the next load
   Components::clawOpen();
+  if (!wait(CLAW_RELEASE)) return;
   straightToY(-150, 2500, REACH_BACK);
   Components::liftTo(LIFT_BOTTOM);
   if (!finished()) return;

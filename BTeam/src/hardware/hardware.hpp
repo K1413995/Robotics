@@ -22,7 +22,7 @@ constexpr int LIFT_LEFT = -5;
 constexpr int LIFT_RIGHT = 7;
 constexpr int LIFT_ROTATION = 4;
 
-constexpr int CLAW = -21;
+constexpr int CLAW = -18;
 } // namespace Ports
 
 namespace Hardware {

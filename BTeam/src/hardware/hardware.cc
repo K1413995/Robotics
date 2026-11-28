@@ -1,5 +1,6 @@
 // HARDWARE
 #include "hardware.hpp"
+#include "../auton/autonconfig.hpp"
 #include "pros/abstract_motor.hpp"
 
 namespace Hardware {
@@ -29,7 +30,9 @@ pros::Distance leftDistance(Ports::LEFT_DISTANCE);
 pros::Distance rightDistance(Ports::RIGHT_DISTANCE);
 pros::Distance backDistance(Ports::BACK_DISTANCE);
 
-lemlib::TrackingWheel vertical(&verticalSensor, lemlib::Omniwheel::NEW_2, 0);
+// Diameter is calibrated in autonconfig.hpp
+lemlib::TrackingWheel vertical(&verticalSensor,
+                              AutonConfig::TRACKING_WHEEL_DIAMETER, 0);
 
 // Controller config
 // input curve for throttle input during driver control

@@ -12,12 +12,16 @@ Usage (from the BTeam folder):
   python tools/routepreview.py                 match auton, left side
   python tools/routepreview.py --side right    flipped for the right side
   python tools/routepreview.py --auton skills
+  python tools/routepreview.py --field empty      a plain field
   python tools/routepreview.py --field override   the VEX Override field
   python tools/routepreview.py --field my.png      any Jerry.io-sized image
   python tools/routepreview.py --seen "121,-150 118,-62"
       also draws where the robot really went (from a video), in pink
 Saves tools/route_<auton>_<side>.png and prints every stop.
-Field images from Jerry.io are in tools/fields (empty is the default).
+Field images are in tools/fields. The default, recf-pinnacle.png, is the RECF
+Achieve Pinnacle setup diagram (manual v3.0) turned so the red side is on our
+wall, cropped and scaled like a Jerry.io field. Load the same file into
+Jerry.io as a custom field image, 3690 mm, to plan on it there.
 
 Field: Jerry.io "VEX Gaming Positioning System", centimeters, (0, 0) at the
 center. X+ toward our wall, Y+ to our right, heading 0 = +Y, clockwise.
@@ -33,14 +37,15 @@ from PIL import Image, ImageDraw, ImageFont
 
 # SETTINGS
 START = (150.0, -150.0, 270.0)  # left side start: x, y, heading
-ROBOT_LENGTH = 38.0  # cm, front to back
-ROBOT_WIDTH = 38.0  # cm, side to side
+ROBOT_LENGTH = 34.29  # cm, front to back (13.5 in)
+ROBOT_WIDTH = 29.21  # cm, side to side (11.5 in)
 FIELD_INSIDE = 140.4 * 2.54  # wall to wall, matches autonconfig.hpp
 IMAGE_SPAN = 369.0  # cm across a Jerry.io field image
 SIZE = 1000  # output image pixels
 
 HERE = Path(__file__).resolve().parent
-FIELDS = {"empty": HERE / "fields" / "empty.png",
+FIELDS = {"pinnacle": HERE / "fields" / "recf-pinnacle.png",
+          "empty": HERE / "fields" / "empty.png",
           "override": HERE / "fields" / "vex-override.png"}
 AUTON_FILE = HERE.parent / "src" / "auton" / "auton.cc"
 
@@ -178,8 +183,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--auton", default="match")
     parser.add_argument("--side", choices=("left", "right"), default="left")
-    parser.add_argument("--field", default="empty",
-                        help="empty, override, or a Jerry.io-sized image (369 cm across)")
+    parser.add_argument("--field", default="pinnacle",
+                        help="pinnacle, empty, override, or a Jerry.io-sized image (369 cm across)")
     parser.add_argument("--seen", default="",
                         help='real positions, like "121,-150 118,-62"')
     args = parser.parse_args()

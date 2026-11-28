@@ -17,6 +17,15 @@ namespace AutonConfig {
 constexpr double FIELD_WIDTH = 140.4;  // X direction, inches
 constexpr double FIELD_LENGTH = 140.4; // Y direction, inches
 
+// TRACKING WHEEL
+// Its real rolling diameter, in inches. A "2 inch" omni is 2.125 on paper,
+// but the real number decides how far the robot thinks it drove.
+// To calibrate: put the robot at a tape mark, push it straight 200 cm by hand
+// along a tape measure, and read how far the brain says it went.
+//   new diameter = old diameter * real distance / brain distance
+// e.g. brain says 206 cm for a real 200: 2.125 * 200 / 206 = 2.063
+constexpr float TRACKING_WHEEL_DIAMETER = 2.125;
+
 // DISTANCE SENSOR OFFSETS
 // Measure from the robot's center of rotation to the FRONT FACE of each sensor.
 // forward: + toward the front of the robot, - toward the back
@@ -26,7 +35,9 @@ struct SensorOffset {
   double right;   // inches
 };
 
-// TODO: measure these on the robot, they are 0 until then
+// Any error here moves the whole auton: the start position is read from these.
+// TODO: RIGHT is still 0, so a right side start reads Y off by the sensor's
+// distance from the center. Measure it before running the right side
 constexpr SensorOffset LEFT_SENSOR_OFFSET{4, -5.3}; // right should be negative
 constexpr SensorOffset RIGHT_SENSOR_OFFSET{0, 0};   // right should be positive
 constexpr SensorOffset BACK_SENSOR_OFFSET{-7.5,
